@@ -55,7 +55,7 @@ export default {
     const { pathname } = url;
 
     if (pathname.startsWith('/p/')) {
-      return serveAsset(request, env, '/product.html');
+      return serveAsset(request, env, '/product');
     }
 
     if (pathname.startsWith('/owner/')) {
