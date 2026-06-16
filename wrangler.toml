@@ -6,4 +6,7 @@ compatibility_date = "2024-09-23"
 binding = "DB"
 database_name = "digitaalinen_tuotepassi"
 database_id = "9fc75247-43ec-4fde-a16d-d331ef3b0e66"
-migrations_dir = "migrations"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
