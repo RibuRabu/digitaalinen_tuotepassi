@@ -39,14 +39,35 @@ function escapeHtml(str) {
   }[c]));
 }
 
+function parseList(json) {
+  try {
+    const v = JSON.parse(json || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+function listCard(title, items) {
+  if (!items.length) return '';
+  return `
+    <div class="card">
+      <h2>${escapeHtml(title)}</h2>
+      <ul class="materials">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+    </div>`;
+}
+
 function render(app, p) {
-  let materials = [];
-  try { materials = JSON.parse(p.materials_json || '[]'); } catch {}
+  const materials = parseList(p.materials_json);
+  const safetyNotes = parseList(p.safety_notes_json);
+  const careInstructions = parseList(p.care_instructions_json);
+  const repairInstructions = parseList(p.repair_instructions_json);
+  const recyclingInstructions = parseList(p.recycling_instructions_json);
 
   app.innerHTML = `
     <div class="card">
       <span class="badge ${p.status === 'active' ? 'active' : ''}">${escapeHtml(p.status)}</span>
-      <h1>${escapeHtml(p.name)}</h1>
+      <h1>${escapeHtml(p.product_name)}</h1>
       <p class="muted">${escapeHtml(p.brand_name || '')}</p>
     </div>
 
@@ -57,29 +78,20 @@ function render(app, p) {
       <p class="muted">${escapeHtml(p.manufacturer_address || '')}</p>
     </div>
 
-    ${materials.length ? `
-    <div class="card">
-      <h2>Materiaalit</h2>
-      <ul class="materials">${materials.map(m => `<li>${escapeHtml(m)}</li>`).join('')}</ul>
-    </div>` : ''}
+    ${listCard('Materiaalit', materials)}
+    ${listCard('Hoito-ohjeet', careInstructions)}
+    ${listCard('Korjausohjeet', repairInstructions)}
+    ${listCard('Kierrätysohjeet', recyclingInstructions)}
+    ${listCard('Turvallisuustiedot', safetyNotes)}
 
-    ${p.care_instructions ? `
     <div class="card">
-      <h2>Hoito-ohjeet</h2>
-      <p>${escapeHtml(p.care_instructions)}</p>
-    </div>` : ''}
-
-    ${p.recycling_instructions ? `
-    <div class="card">
-      <h2>Kierrätysohjeet</h2>
-      <p>${escapeHtml(p.recycling_instructions)}</p>
-    </div>` : ''}
-
-    ${p.safety_notes ? `
-    <div class="card">
-      <h2>Turvallisuustiedot</h2>
-      <p>${escapeHtml(p.safety_notes)}</p>
-    </div>` : ''}
+      <h2>Tuotepassin tunnisteet</h2>
+      <p class="muted">Tuotetunniste (UID): ${escapeHtml(p.product_uid)}</p>
+      <p class="muted">Passin tunniste: ${escapeHtml(p.passport_uid)}</p>
+      <p class="muted">Tunnistetaso: ${escapeHtml(p.identifier_level)}</p>
+      <p class="muted">Data carrier: ${escapeHtml(p.data_carrier_type)}</p>
+      <p class="muted">Versio: ${escapeHtml(p.version)}</p>
+    </div>
   `;
 }
 
