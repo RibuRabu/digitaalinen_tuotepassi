@@ -1,0 +1,9 @@
+name = "digitaalinen-tuotepassi"
+main = "src/index.ts"
+compatibility_date = "2026-06-16"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "digitaalinen_tuotepassi"
+database_id = "replace-with-cloudflare-d1-database-id"
+migrations_dir = "migrations"

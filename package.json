@@ -1,0 +1,20 @@
+{
+  "name": "digitaalinen_tuotepassi",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create digitaalinen_tuotepassi",
+    "db:migrate:local": "wrangler d1 migrations apply digitaalinen_tuotepassi --local",
+    "db:migrate:remote": "wrangler d1 migrations apply digitaalinen_tuotepassi --remote",
+    "typecheck": "tsc --noEmit",
+    "db:init:local": "wrangler d1 migrations apply digitaalinen_tuotepassi --local",
+    "db:init:remote": "wrangler d1 migrations apply digitaalinen_tuotepassi --remote"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "wrangler": "^4.20.0"
+  }
+}
