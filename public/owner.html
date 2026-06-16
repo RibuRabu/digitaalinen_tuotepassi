@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muokkaa tuotepassia</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="page" id="app">
+  <p class="muted">Ladataan...</p>
+</div>
+<script>
+const FIELDS = [
+  ['name', 'Tuotteen nimi', 'input'],
+  ['brand_name', 'Brändi', 'input'],
+  ['manufacturer_name', 'Valmistaja', 'input'],
+  ['manufacturer_email', 'Valmistajan sähköposti', 'input'],
+  ['manufacturer_address', 'Valmistajan osoite', 'textarea'],
+  ['product_type', 'Tuotetyyppi', 'input'],
+  ['sku', 'SKU', 'input'],
+  ['safety_notes', 'Turvallisuustiedot', 'textarea'],
+  ['care_instructions', 'Hoito-ohjeet', 'textarea'],
+  ['recycling_instructions', 'Kierrätysohjeet', 'textarea'],
+];
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function getToken() {
+  return location.pathname.replace(/^\/owner\//, '').replace(/\/$/, '');
+}
+
+async function main() {
+  const token = getToken();
+  const app = document.getElementById('app');
+  if (!token) {
+    app.innerHTML = '<p class="error">Virheellinen linkki.</p>';
+    return;
+  }
+  let res;
+  try {
+    res = await fetch(`/api/owner/product/${encodeURIComponent(token)}`);
+  } catch {
+    app.innerHTML = '<p class="error">Virhe yhteydessä.</p>';
+    return;
+  }
+  if (!res.ok) {
+    app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
+    return;
+  }
+  const product = await res.json();
+  renderForm(app, product, token);
+}
+
+function renderForm(app, product, token) {
+  let materials = [];
+  try { materials = JSON.parse(product.materials_json || '[]'); } catch {}
+
+  const fieldsHtml = FIELDS.map(([key, label, type]) => `
+    <div class="field">
+      <label for="${key}">${escapeHtml(label)}</label>
+      ${type === 'textarea'
+        ? `<textarea id="${key}" name="${key}">${escapeHtml(product[key])}</textarea>`
+        : `<input id="${key}" name="${key}" value="${escapeHtml(product[key])}">`}
+    </div>
+  `).join('');
+
+  app.innerHTML = `
+    <div class="card">
+      <h1>${escapeHtml(product.name || 'Tuote')}</h1>
+      <p class="muted">Julkinen sivu: <a href="/p/${encodeURIComponent(product.public_slug)}" target="_blank">/p/${escapeHtml(product.public_slug)}</a></p>
+    </div>
+
+    <form class="card" id="edit-form">
+      <div class="field">
+        <label for="status">Tila</label>
+        <select id="status" name="status">
+          <option value="draft">Luonnos</option>
+          <option value="active">Julkaistu</option>
+          <option value="archived">Arkistoitu</option>
+        </select>
+      </div>
+      ${fieldsHtml}
+      <div class="field">
+        <label for="materials">Materiaalit (pilkulla eroteltuna)</label>
+        <input id="materials" name="materials" value="${escapeHtml(materials.join(', '))}">
+      </div>
+      <button type="submit">Tallenna</button>
+      <div class="status-msg" id="status-msg"></div>
+    </form>
+  `;
+
+  document.getElementById('status').value = product.status || 'draft';
+
+  document.getElementById('edit-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('status-msg');
+    msg.textContent = 'Tallennetaan...';
+    msg.className = 'status-msg muted';
+
+    const payload = { status: document.getElementById('status').value };
+    for (const [key] of FIELDS) {
+      payload[key] = document.getElementById(key).value;
+    }
+    payload.materials = document.getElementById('materials').value
+      .split(',').map(s => s.trim()).filter(Boolean);
+
+    try {
+      const res = await fetch(`/api/owner/product/${encodeURIComponent(token)}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('save_failed');
+      msg.textContent = 'Tallennettu.';
+      msg.className = 'status-msg';
+    } catch {
+      msg.textContent = 'Tallennus epäonnistui.';
+      msg.className = 'status-msg error';
+    }
+  });
+}
+
+main();
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tuotepassi</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="page" id="app">
+  <p class="muted">Ladataan tuotetietoja...</p>
+</div>
+<script>
+async function main() {
+  const slug = location.pathname.replace(/^\/p\//, '').replace(/\/$/, '');
+  const app = document.getElementById('app');
+  if (!slug) {
+    app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
+    return;
+  }
+  let res;
+  try {
+    res = await fetch(`/api/public/product/${encodeURIComponent(slug)}`);
+  } catch {
+    app.innerHTML = '<p class="error">Virhe yhteydessä.</p>';
+    return;
+  }
+  if (!res.ok) {
+    app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
+    return;
+  }
+  const p = await res.json();
+  render(app, p);
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function render(app, p) {
+  let materials = [];
+  try { materials = JSON.parse(p.materials_json || '[]'); } catch {}
+
+  app.innerHTML = `
+    <div class="card">
+      <span class="badge ${p.status === 'active' ? 'active' : ''}">${escapeHtml(p.status)}</span>
+      <h1>${escapeHtml(p.name)}</h1>
+      <p class="muted">${escapeHtml(p.brand_name || '')}</p>
+    </div>
+
+    <div class="card">
+      <h2>Valmistaja</h2>
+      <p>${escapeHtml(p.manufacturer_name || '-')}</p>
+      <p class="muted">${escapeHtml(p.manufacturer_email || '')}</p>
+      <p class="muted">${escapeHtml(p.manufacturer_address || '')}</p>
+    </div>
+
+    ${materials.length ? `
+    <div class="card">
+      <h2>Materiaalit</h2>
+      <ul class="materials">${materials.map(m => `<li>${escapeHtml(m)}</li>`).join('')}</ul>
+    </div>` : ''}
+
+    ${p.care_instructions ? `
+    <div class="card">
+      <h2>Hoito-ohjeet</h2>
+      <p>${escapeHtml(p.care_instructions)}</p>
+    </div>` : ''}
+
+    ${p.recycling_instructions ? `
+    <div class="card">
+      <h2>Kierrätysohjeet</h2>
+      <p>${escapeHtml(p.recycling_instructions)}</p>
+    </div>` : ''}
+
+    ${p.safety_notes ? `
+    <div class="card">
+      <h2>Turvallisuustiedot</h2>
+      <p>${escapeHtml(p.safety_notes)}</p>
+    </div>` : ''}
+  `;
+}
+
+main();
+</script>
+</body>
+</html>
