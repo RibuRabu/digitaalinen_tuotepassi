@@ -12,10 +12,12 @@
 </div>
 <script>
 async function main() {
-  const slug = location.pathname.replace(/^\/p\//, '').replace(/\/$/, '');
+  const match = location.pathname.match(/^\/p\/([^/]+)\/?$/);
+  const slug = match ? match[1] : '';
   const app = document.getElementById('app');
   if (!slug) {
-    app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
+    console.error('Virheellinen tuotelinkki, pathname:', location.pathname);
+    app.innerHTML = '<p class="error">Virheellinen tuotelinkki.</p>';
     return;
   }
   let res;
