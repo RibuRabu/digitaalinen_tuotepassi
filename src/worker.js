@@ -59,7 +59,7 @@ export default {
     }
 
     if (pathname.startsWith('/owner/')) {
-      return serveAsset(request, env, '/owner.html');
+      return serveAsset(request, env, '/owner');
     }
 
     if (pathname.startsWith('/api/public/product/') && request.method === 'GET') {
