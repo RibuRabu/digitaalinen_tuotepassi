@@ -82,3 +82,22 @@ button:hover { opacity: .9; }
 .error { color: #b3261e; }
 .status-msg { margin-top: .75rem; font-size: .9rem; }
 ul.materials { padding-left: 1.1rem; margin: 0; }
+
+.link-row { display: flex; gap: .5rem; align-items: center; }
+.link-row .link-input { flex: 1; min-width: 0; cursor: default; }
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: .85rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: .6rem .5rem;
+}
+.result-card { border-left: 3px solid var(--color-accent); }

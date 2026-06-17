@@ -53,7 +53,8 @@ function parseList(json) {
 }
 
 function getToken() {
-  return location.pathname.replace(/^\/owner\//, '').replace(/\/$/, '');
+  const match = location.pathname.match(/^\/owner\/([^/]+)\/?$/);
+  return match ? match[1] : '';
 }
 
 async function main() {
