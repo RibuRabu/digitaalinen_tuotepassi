@@ -14,3 +14,13 @@ binding = "ASSETS"
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "dpp-files"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "513eb65305f64255b4c4fa5ff3fc9c9b"
+
+# Secrets — set via: wrangler secret put <NAME>
+# ADMIN_SECRET          — legacy admin panel auth
+# CLERK_JWKS_URL        — e.g. https://<instance>.clerk.accounts.dev/.well-known/jwks.json
+# CLERK_WEBHOOK_SECRET  — from Clerk dashboard webhook endpoint (starts with whsec_)
+# CORS_ORIGIN           — dashboard URL, e.g. https://dashboard.tulkintatila.fi
