@@ -10,3 +10,7 @@ database_id = "9fc75247-43ec-4fde-a16d-d331ef3b0e66"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "dpp-files"

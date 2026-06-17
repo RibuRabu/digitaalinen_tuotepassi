@@ -38,6 +38,14 @@
       <input id="manufacturer_name" name="manufacturer_name" placeholder="esim. Luonto Oy">
     </div>
     <div class="field">
+      <label for="customer_name">Asiakkaan nimi (sisäinen)</label>
+      <input id="customer_name" name="customer_name" placeholder="esim. Luonto Oy – kirjanpito">
+    </div>
+    <div class="field">
+      <label for="customer_email">Asiakkaan sähköposti (sisäinen)</label>
+      <input type="email" id="customer_email" name="customer_email" placeholder="asiakas@yritys.fi">
+    </div>
+    <div class="field">
       <label for="identifier_level">Tunnistetaso</label>
       <select id="identifier_level" name="identifier_level">
         <option value="model">Mallikohtainen (model)</option>
@@ -69,6 +77,19 @@ function getSecret() {
   return sessionStorage.getItem('dpp_admin_secret') || '';
 }
 
+let _qr = null;
+async function loadQRLib() {
+  if (_qr) return _qr;
+  if (window.QRCode) { _qr = window.QRCode; return _qr; }
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+    s.onload = () => { _qr = window.QRCode; resolve(_qr); };
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+}
+
 function linkBlock(label, url, openable) {
   const su = escapeHtml(url);
   return `
@@ -93,6 +114,13 @@ function resultCard(productName, data) {
       ${linkBlock('Julkinen passilinkki (QR / NFC)', publicUrl, true)}
       ${linkBlock('Owner-hallintayhteys (salainen)', ownerUrl, true)}
       ${linkBlock('Koneluettava passi-API', passportUrl, false)}
+      <div class="qr-block">
+        <canvas class="qr-canvas"></canvas>
+        <div>
+          <p class="muted" style="font-size:.8rem;margin:.25rem 0 .5rem">QR → ${escapeHtml(publicUrl)}</p>
+          <button type="button" class="btn-secondary qr-download-btn">Lataa PNG</button>
+        </div>
+      </div>
       <p class="muted" style="margin-top:.75rem;font-size:.8rem">Tallenna owner-linkki heti – sitä ei voi hakea myöhemmin ilman admin-tunnuksia.</p>
     </div>`;
 }
@@ -138,16 +166,17 @@ function main() {
     };
     const brand = document.getElementById('brand_name').value.trim();
     const mfr = document.getElementById('manufacturer_name').value.trim();
+    const custName = document.getElementById('customer_name').value.trim();
+    const custEmail = document.getElementById('customer_email').value.trim();
     if (brand) payload.brand_name = brand;
     if (mfr) payload.manufacturer_name = mfr;
+    if (custName) payload.customer_name = custName;
+    if (custEmail) payload.customer_email = custEmail;
 
     try {
       const res = await fetch('/api/admin/product/create', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'authorization': `Bearer ${secret}`,
-        },
+        headers: { 'content-type': 'application/json', 'authorization': `Bearer ${secret}` },
         body: JSON.stringify(payload),
       });
 
@@ -166,7 +195,16 @@ function main() {
       const data = await res.json();
       msg.textContent = '';
       e.target.reset();
+
       document.getElementById('results').insertAdjacentHTML('afterbegin', resultCard(productName, data));
+
+      const newCard = document.getElementById('results').firstElementChild;
+      const canvas = newCard.querySelector('.qr-canvas');
+      const publicUrl = `${location.origin}/p/${data.slug}`;
+      const qr = await loadQRLib();
+      if (qr && canvas) {
+        qr.toCanvas(canvas, publicUrl, { width: 180, margin: 1 }).catch(() => {});
+      }
     } catch {
       msg.className = 'status-msg error';
       msg.textContent = 'Yhteysvirhe.';
@@ -176,13 +214,25 @@ function main() {
   });
 
   document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-copy]');
-    if (!btn) return;
-    navigator.clipboard.writeText(btn.dataset.copy).then(() => {
-      const orig = btn.textContent;
-      btn.textContent = 'Kopioitu!';
-      setTimeout(() => { btn.textContent = orig; }, 1500);
-    });
+    const copyBtn = e.target.closest('[data-copy]');
+    if (copyBtn) {
+      navigator.clipboard.writeText(copyBtn.dataset.copy).then(() => {
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = 'Kopioitu!';
+        setTimeout(() => { copyBtn.textContent = orig; }, 1500);
+      });
+    }
+
+    if (e.target.classList.contains('qr-download-btn')) {
+      const block = e.target.closest('.qr-block');
+      const canvas = block?.querySelector('.qr-canvas');
+      if (canvas) {
+        const a = document.createElement('a');
+        a.download = 'qr-code.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      }
+    }
   });
 }
 

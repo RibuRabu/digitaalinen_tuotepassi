@@ -34,22 +34,51 @@ const LIST_FIELDS = [
   ['care_instructions', 'care_instructions_json', 'Hoito-ohjeet (pilkulla eroteltuna)'],
   ['repair_instructions', 'repair_instructions_json', 'Korjausohjeet (pilkulla eroteltuna)'],
   ['recycling_instructions', 'recycling_instructions_json', 'Kierrätysohjeet (pilkulla eroteltuna)'],
-  ['compliance_documents', 'compliance_documents_json', 'Vaatimustenmukaisuusasiakirjat (pilkulla eroteltuna)'],
 ];
 
+const TRANS_LANGS = [
+  ['en', 'English'],
+  ['sv', 'Svenska'],
+  ['de', 'Deutsch'],
+  ['fr', 'Français'],
+  ['et', 'Eesti'],
+  ['lv', 'Latviešu'],
+  ['lt', 'Lietuvių'],
+  ['pl', 'Polski'],
+];
+
+const TRANS_TEXT = [
+  ['product_name', 'Tuotteen nimi'],
+  ['brand_name', 'Brändi'],
+  ['product_type', 'Tuotetyyppi'],
+];
+
+const TRANS_LISTS = [
+  ['materials', 'Materiaalit (yksi per rivi)'],
+  ['care_instructions', 'Hoito-ohjeet (yksi per rivi)'],
+  ['repair_instructions', 'Korjausohjeet (yksi per rivi)'],
+  ['recycling_instructions', 'Kierrätysohjeet (yksi per rivi)'],
+  ['safety_notes', 'Turvallisuustiedot (yksi per rivi)'],
+];
+
+let currentToken = '';
+let allTranslations = {};
+let activeLang = 'en';
+
 function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function parseList(json) {
   try {
     const v = JSON.parse(json || '[]');
     return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
+}
+
+function parseDocs(json) {
+  const items = parseList(json);
+  return items.map(d => (typeof d === 'string' ? { name: d, url: '' } : d));
 }
 
 function getToken() {
@@ -57,16 +86,30 @@ function getToken() {
   return match ? match[1] : '';
 }
 
+let _qr = null;
+async function loadQRLib() {
+  if (_qr) return _qr;
+  if (window.QRCode) { _qr = window.QRCode; return _qr; }
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+    s.onload = () => { _qr = window.QRCode; resolve(_qr); };
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+}
+
 async function main() {
-  const token = getToken();
+  currentToken = getToken();
   const app = document.getElementById('app');
-  if (!token) {
-    app.innerHTML = '<p class="error">Virheellinen linkki.</p>';
+  if (!currentToken) {
+    app.innerHTML = '<p class="error">Virheellinen hallintayhteys.</p>';
     return;
   }
+
   let res;
   try {
-    res = await fetch(`/api/owner/product/${encodeURIComponent(token)}`);
+    res = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`);
   } catch {
     app.innerHTML = '<p class="error">Virhe yhteydessä.</p>';
     return;
@@ -75,11 +118,15 @@ async function main() {
     app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
     return;
   }
+
   const product = await res.json();
-  renderForm(app, product, token);
+  renderAll(app, product);
 }
 
-function renderForm(app, product, token) {
+function renderAll(app, product) {
+  const publicUrl = `${location.origin}/p/${encodeURIComponent(product.public_slug)}`;
+  const docs = parseDocs(product.compliance_documents_json);
+
   const textFieldsHtml = TEXT_FIELDS.map(([key, label, type]) => `
     <div class="field">
       <label for="${key}">${escapeHtml(label)}</label>
@@ -96,16 +143,46 @@ function renderForm(app, product, token) {
     </div>
   `).join('');
 
+  const docsHtml = docs.length
+    ? docs.map(d => `
+        <div class="doc-item">
+          <span class="doc-name">${escapeHtml(d.name)}</span>
+          ${d.url ? `<a href="${escapeHtml(d.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>` : ''}
+        </div>`).join('')
+    : '<p class="muted">Ei asiakirjoja vielä.</p>';
+
+  const transLangOptions = TRANS_LANGS.map(([code, label]) =>
+    `<option value="${code}">${label}</option>`).join('');
+
+  const transTextHtml = TRANS_TEXT.map(([key, label]) => `
+    <div class="field">
+      <label for="tr_${key}">${escapeHtml(label)}</label>
+      <input id="tr_${key}" name="tr_${key}">
+    </div>`).join('');
+
+  const transListHtml = TRANS_LISTS.map(([key, label]) => `
+    <div class="field">
+      <label for="tr_${key}">${escapeHtml(label)}</label>
+      <textarea id="tr_${key}" name="tr_${key}" style="min-height:4rem"></textarea>
+    </div>`).join('');
+
   app.innerHTML = `
     <div class="card">
       <h1>${escapeHtml(product.product_name || 'Tuote')}</h1>
-      <p class="muted">Julkinen sivu: <a href="/p/${encodeURIComponent(product.public_slug)}" target="_blank">/p/${escapeHtml(product.public_slug)}</a></p>
+      <p class="muted">Julkinen sivu: <a href="${escapeHtml(publicUrl)}" target="_blank">/p/${escapeHtml(product.public_slug)}</a></p>
       <p class="muted">Tuotetunniste (UID): ${escapeHtml(product.product_uid)}</p>
-      <p class="muted">Passin tunniste: ${escapeHtml(product.passport_uid)}</p>
       <p class="muted">Versio: ${escapeHtml(product.version)}</p>
+      <div class="qr-block" style="margin-top:1rem">
+        <canvas id="qr-canvas"></canvas>
+        <div>
+          <p class="muted" style="font-size:.8rem;margin:.25rem 0 .5rem">Julkinen QR-koodi</p>
+          <button type="button" class="btn-secondary" id="qr-download-btn">Lataa PNG</button>
+        </div>
+      </div>
     </div>
 
     <form class="card" id="edit-form">
+      <h2>Perustiedot ja tila</h2>
       <div class="field">
         <label for="status">Tila</label>
         <select id="status" name="status">
@@ -117,15 +194,58 @@ function renderForm(app, product, token) {
       ${textFieldsHtml}
       ${listFieldsHtml}
       <button type="submit">Tallenna</button>
-      <div class="status-msg" id="status-msg"></div>
+      <p class="status-msg" id="edit-msg"></p>
     </form>
+
+    <div class="card">
+      <h2>Asiakirjat</h2>
+      <div id="doc-list">${docsHtml}</div>
+      <div style="margin-top:1rem">
+        <div class="field">
+          <label for="doc-file">Lisää tiedosto (PDF, kuva – max 10 MB)</label>
+          <input type="file" id="doc-file" accept=".pdf,image/*">
+        </div>
+        <button type="button" id="doc-upload-btn">Lähetä tiedosto</button>
+        <p class="status-msg" id="doc-msg"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Käännökset</h2>
+      <p class="muted" style="margin-bottom:1rem;font-size:.85rem">Syötä käännetyt sisällöt EU-myyntiä varten. Kuluttajan selain valitsee automaattisesti oikean kielen.</p>
+      <div class="field">
+        <label for="trans-lang">Kieli</label>
+        <select id="trans-lang">${transLangOptions}</select>
+      </div>
+      ${transTextHtml}
+      ${transListHtml}
+      <button type="button" id="save-trans-btn">Tallenna käännös</button>
+      <p class="status-msg" id="trans-msg"></p>
+    </div>
   `;
 
   document.getElementById('status').value = product.status || 'draft';
 
-  document.getElementById('edit-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const msg = document.getElementById('status-msg');
+  // QR
+  loadQRLib().then(qr => {
+    const canvas = document.getElementById('qr-canvas');
+    if (qr && canvas) qr.toCanvas(canvas, publicUrl, { width: 160, margin: 1 }).catch(() => {});
+  });
+
+  document.getElementById('qr-download-btn').addEventListener('click', () => {
+    const canvas = document.getElementById('qr-canvas');
+    if (canvas) {
+      const a = document.createElement('a');
+      a.download = `qr-${product.public_slug}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+  });
+
+  // Main form
+  document.getElementById('edit-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const msg = document.getElementById('edit-msg');
     msg.textContent = 'Tallennetaan...';
     msg.className = 'status-msg muted';
 
@@ -139,13 +259,13 @@ function renderForm(app, product, token) {
     }
 
     try {
-      const res = await fetch(`/api/owner/product/${encodeURIComponent(token)}`, {
+      const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('save_failed');
-      const updated = await res.json();
+      if (!r.ok) throw new Error();
+      const updated = await r.json();
       msg.textContent = `Tallennettu (versio ${updated.version}).`;
       msg.className = 'status-msg';
     } catch {
@@ -153,6 +273,111 @@ function renderForm(app, product, token) {
       msg.className = 'status-msg error';
     }
   });
+
+  // Document upload
+  document.getElementById('doc-upload-btn').addEventListener('click', async () => {
+    const fileInput = document.getElementById('doc-file');
+    const file = fileInput.files[0];
+    const msg = document.getElementById('doc-msg');
+    if (!file) { msg.textContent = 'Valitse ensin tiedosto.'; msg.className = 'status-msg error'; return; }
+
+    msg.textContent = 'Ladataan...';
+    msg.className = 'status-msg muted';
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+      const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}/document`, {
+        method: 'POST',
+        body: fd,
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        msg.textContent = `Virhe: ${err.error || r.status}`;
+        msg.className = 'status-msg error';
+        return;
+      }
+      const doc = await r.json();
+      msg.textContent = 'Tiedosto tallennettu.';
+      msg.className = 'status-msg';
+      fileInput.value = '';
+
+      const docList = document.getElementById('doc-list');
+      const noDocsMsg = docList.querySelector('p.muted');
+      if (noDocsMsg) noDocsMsg.remove();
+      docList.insertAdjacentHTML('beforeend', `
+        <div class="doc-item">
+          <span class="doc-name">${escapeHtml(doc.name)}</span>
+          <a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>
+        </div>`);
+    } catch {
+      msg.textContent = 'Yhteysvirhe.';
+      msg.className = 'status-msg error';
+    }
+  });
+
+  // Translations
+  try { allTranslations = JSON.parse(product.translations_json || '{}'); } catch { allTranslations = {}; }
+  loadTranslationForLang('en');
+
+  document.getElementById('trans-lang').addEventListener('change', (ev) => {
+    saveActiveLangToState();
+    loadTranslationForLang(ev.target.value);
+  });
+
+  document.getElementById('save-trans-btn').addEventListener('click', async () => {
+    saveActiveLangToState();
+    const msg = document.getElementById('trans-msg');
+    msg.textContent = 'Tallennetaan...';
+    msg.className = 'status-msg muted';
+
+    try {
+      const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ translations: allTranslations }),
+      });
+      if (!r.ok) throw new Error();
+      const updated = await r.json();
+      msg.textContent = `Käännös tallennettu (versio ${updated.version}).`;
+      msg.className = 'status-msg';
+    } catch {
+      msg.textContent = 'Tallennus epäonnistui.';
+      msg.className = 'status-msg error';
+    }
+  });
+}
+
+function loadTranslationForLang(lang) {
+  activeLang = lang;
+  const t = allTranslations[lang] || {};
+  for (const [key] of TRANS_TEXT) {
+    const el = document.getElementById(`tr_${key}`);
+    if (el) el.value = t[key] || '';
+  }
+  for (const [key] of TRANS_LISTS) {
+    const el = document.getElementById(`tr_${key}`);
+    if (el) el.value = Array.isArray(t[key]) ? t[key].join('\n') : '';
+  }
+}
+
+function saveActiveLangToState() {
+  const t = {};
+  for (const [key] of TRANS_TEXT) {
+    const el = document.getElementById(`tr_${key}`);
+    if (el) t[key] = el.value.trim();
+  }
+  for (const [key] of TRANS_LISTS) {
+    const el = document.getElementById(`tr_${key}`);
+    if (el) t[key] = el.value.split('\n').map(s => s.trim()).filter(Boolean);
+  }
+  const hasContent = Object.values(t).some(v => (Array.isArray(v) ? v.length > 0 : v !== ''));
+  if (hasContent) {
+    allTranslations[activeLang] = t;
+  } else {
+    delete allTranslations[activeLang];
+  }
 }
 
 main();

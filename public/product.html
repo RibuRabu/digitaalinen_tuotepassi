@@ -45,9 +45,24 @@ function parseList(json) {
   try {
     const v = JSON.parse(json || '[]');
     return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
+}
+
+function getTranslation(p) {
+  let trans = {};
+  try { trans = JSON.parse(p.translations_json || '{}'); } catch {}
+  const lang = (navigator.language || '').split('-')[0].toLowerCase();
+  return trans[lang] || {};
+}
+
+function t(p, trans, key) {
+  const v = trans[key];
+  return (v !== undefined && v !== '') ? v : (p[key] ?? '');
+}
+
+function tList(p, trans, jsonKey, transKey) {
+  if (Array.isArray(trans[transKey]) && trans[transKey].length > 0) return trans[transKey];
+  return parseList(p[jsonKey]);
 }
 
 function listCard(title, items) {
@@ -60,24 +75,32 @@ function listCard(title, items) {
 }
 
 function render(app, p) {
-  const materials = parseList(p.materials_json);
-  const safetyNotes = parseList(p.safety_notes_json);
-  const careInstructions = parseList(p.care_instructions_json);
-  const repairInstructions = parseList(p.repair_instructions_json);
-  const recyclingInstructions = parseList(p.recycling_instructions_json);
+  const trans = getTranslation(p);
+
+  const productName = t(p, trans, 'product_name');
+  const brandName = t(p, trans, 'brand_name');
+  const manufacturerName = t(p, trans, 'manufacturer_name');
+  const manufacturerEmail = t(p, trans, 'manufacturer_email');
+  const manufacturerAddress = t(p, trans, 'manufacturer_address');
+
+  const materials = tList(p, trans, 'materials_json', 'materials');
+  const safetyNotes = tList(p, trans, 'safety_notes_json', 'safety_notes');
+  const careInstructions = tList(p, trans, 'care_instructions_json', 'care_instructions');
+  const repairInstructions = tList(p, trans, 'repair_instructions_json', 'repair_instructions');
+  const recyclingInstructions = tList(p, trans, 'recycling_instructions_json', 'recycling_instructions');
 
   app.innerHTML = `
     <div class="card">
       <span class="badge ${p.status === 'active' ? 'active' : ''}">${escapeHtml(p.status)}</span>
-      <h1>${escapeHtml(p.product_name)}</h1>
-      <p class="muted">${escapeHtml(p.brand_name || '')}</p>
+      <h1>${escapeHtml(productName)}</h1>
+      <p class="muted">${escapeHtml(brandName)}</p>
     </div>
 
     <div class="card">
       <h2>Valmistaja</h2>
-      <p>${escapeHtml(p.manufacturer_name || '-')}</p>
-      <p class="muted">${escapeHtml(p.manufacturer_email || '')}</p>
-      <p class="muted">${escapeHtml(p.manufacturer_address || '')}</p>
+      <p>${escapeHtml(manufacturerName || '-')}</p>
+      <p class="muted">${escapeHtml(manufacturerEmail)}</p>
+      <p class="muted">${escapeHtml(manufacturerAddress)}</p>
     </div>
 
     ${listCard('Materiaalit', materials)}

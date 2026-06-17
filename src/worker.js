@@ -36,6 +36,7 @@ const VISIBILITY_ELIGIBLE_FIELDS = [
 const ALWAYS_VISIBLE_FIELDS = [
   'public_slug', 'product_uid', 'passport_uid', 'data_carrier_type',
   'data_carrier_url', 'identifier_level', 'status', 'version', 'languages_json',
+  'translations_json',
 ];
 
 const DEFAULT_CONSUMER_VISIBILITY = [
@@ -48,6 +49,7 @@ const DEFAULT_CONSUMER_VISIBILITY = [
 const STATUSES = ['draft', 'active', 'archived'];
 const DATA_CARRIER_TYPES = ['qr', 'nfc', 'rfid', 'barcode'];
 const IDENTIFIER_LEVELS = ['model', 'batch', 'item'];
+const SUPPORTED_LANGS = ['en', 'sv', 'de', 'fr', 'et', 'lv', 'lt', 'pl'];
 
 export default {
   async fetch(request, env) {
@@ -67,9 +69,17 @@ export default {
     }
 
     if (pathname.startsWith('/api/owner/product/')) {
-      const token = decodeURIComponent(pathname.slice('/api/owner/product/'.length));
+      const rest = pathname.slice('/api/owner/product/'.length);
+      if (rest.endsWith('/document') && request.method === 'POST') {
+        return uploadDocument(request, env, decodeURIComponent(rest.slice(0, -'/document'.length)));
+      }
+      const token = decodeURIComponent(rest);
       if (request.method === 'GET') return getOwnerProduct(env, token);
       if (request.method === 'POST') return updateOwnerProduct(request, env, token);
+    }
+
+    if (pathname.startsWith('/api/files/') && request.method === 'GET') {
+      return serveFile(env, pathname.slice('/api/files/'.length));
     }
 
     if (pathname.startsWith('/api/admin/product/')) {
@@ -219,6 +229,23 @@ async function updateOwnerProduct(request, env, token) {
     updates.visibility_json = JSON.stringify(visibility);
   }
 
+  if ('translations' in body && body.translations !== null && typeof body.translations === 'object') {
+    const TRANS_TEXT = ['product_name', 'brand_name', 'product_type'];
+    const TRANS_LISTS = ['materials', 'care_instructions', 'repair_instructions', 'recycling_instructions', 'safety_notes'];
+    const clean = {};
+    for (const [lang, fields] of Object.entries(body.translations)) {
+      if (!SUPPORTED_LANGS.includes(lang) || typeof fields !== 'object' || fields === null) continue;
+      clean[lang] = {};
+      for (const f of TRANS_TEXT) {
+        if (f in fields) clean[lang][f] = String(fields[f] ?? '');
+      }
+      for (const f of TRANS_LISTS) {
+        if (f in fields) clean[lang][f] = Array.isArray(fields[f]) ? fields[f] : [];
+      }
+    }
+    updates.translations_json = JSON.stringify(clean);
+  }
+
   if (Object.keys(updates).length === 0) {
     return json({ error: 'no_fields' }, 400);
   }
@@ -319,6 +346,7 @@ async function createProduct(request, env) {
     'materials_json', 'substances_json', 'safety_notes_json', 'care_instructions_json',
     'repair_instructions_json', 'recycling_instructions_json', 'compliance_documents_json',
     'languages_json', 'visibility_json', 'version', 'status',
+    'customer_name', 'customer_email',
   ];
 
   const values = [
@@ -343,11 +371,13 @@ async function createProduct(request, env) {
     JSON.stringify(Array.isArray(body.care_instructions) ? body.care_instructions : []),
     JSON.stringify(Array.isArray(body.repair_instructions) ? body.repair_instructions : []),
     JSON.stringify(Array.isArray(body.recycling_instructions) ? body.recycling_instructions : []),
-    JSON.stringify(Array.isArray(body.compliance_documents) ? body.compliance_documents : []),
+    JSON.stringify([]),
     JSON.stringify(Array.isArray(body.languages) ? body.languages : ['fi']),
     JSON.stringify({ consumer: DEFAULT_CONSUMER_VISIBILITY, authority: ['*'], operator: ['*'] }),
     1,
     'draft',
+    body.customer_name || null,
+    body.customer_email || null,
   ];
 
   await env.DB.prepare(
@@ -359,4 +389,56 @@ async function createProduct(request, env) {
   ).bind(newId(), id).run();
 
   return json({ slug, token, product_uid: productUid, passport_uid: passportUid }, 201);
+}
+
+async function serveFile(env, key) {
+  if (!key) return json({ error: 'not_found' }, 404);
+  const obj = await env.BUCKET.get(key);
+  if (!obj) return json({ error: 'not_found' }, 404);
+  const headers = new Headers();
+  obj.writeHttpMetadata(headers);
+  headers.set('etag', obj.httpEtag);
+  if (!headers.has('content-disposition')) headers.set('content-disposition', 'inline');
+  return new Response(obj.body, { headers });
+}
+
+async function uploadDocument(request, env, token) {
+  if (!token) return json({ error: 'not_found' }, 404);
+
+  const product = await env.DB.prepare('SELECT * FROM products WHERE owner_token = ?').bind(token).first();
+  if (!product) return json({ error: 'not_found' }, 404);
+
+  let formData;
+  try { formData = await request.formData(); } catch { return json({ error: 'invalid_form' }, 400); }
+
+  const file = formData.get('file');
+  if (!file || !file.stream) return json({ error: 'no_file' }, 400);
+
+  const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+  if (!ALLOWED_TYPES.includes(file.type)) return json({ error: 'invalid_file_type' }, 400);
+  if (file.size > 10 * 1024 * 1024) return json({ error: 'file_too_large' }, 400);
+
+  const ext = (file.name.split('.').pop() || 'bin').toLowerCase().slice(0, 10);
+  const key = `${product.id}/${crypto.randomUUID()}.${ext}`;
+
+  await env.BUCKET.put(key, file.stream(), {
+    httpMetadata: { contentType: file.type },
+    customMetadata: { originalName: file.name },
+  });
+
+  const fileUrl = `/api/files/${key}`;
+  let docs = [];
+  try { docs = JSON.parse(product.compliance_documents_json || '[]'); } catch {}
+  docs = docs.map((d) => (typeof d === 'string' ? { name: d, url: '' } : d));
+  docs.push({ name: file.name, url: fileUrl });
+
+  await env.DB.prepare(
+    "UPDATE products SET compliance_documents_json = ?, version = version + 1, updated_at = datetime('now') WHERE owner_token = ?"
+  ).bind(JSON.stringify(docs), token).run();
+
+  await env.DB.prepare(
+    "INSERT INTO product_events (id, product_id, event_type, event_data_json, actor_type) VALUES (?, ?, 'document_uploaded', ?, 'owner')"
+  ).bind(newId(), product.id, JSON.stringify({ key, name: file.name })).run();
+
+  return json({ url: fileUrl, name: file.name }, 201);
 }
