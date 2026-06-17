@@ -28,6 +28,7 @@ async function main() {
   catch { app.innerHTML = '<p class="msg msg--err">Virhe yhteydessä.</p>'; return; }
   if (!res.ok) { app.innerHTML = '<p class="msg msg--err">Tuotetta ei löytynyt.</p>'; return; }
   const p = await res.json();
+  document.title = (p.product_name || 'Tuotepassi') + ' – Digitaalinen tuotepassi';
   render(app, p);
 }
 
@@ -58,8 +59,16 @@ function tlist(p, trans, jsonKey, transKey) {
   return parseList(p[jsonKey]);
 }
 
+function formatDate(str) {
+  if (!str) return '';
+  try {
+    const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z');
+    return d.toLocaleDateString('fi-FI', { year: 'numeric', month: 'long', day: 'numeric' });
+  } catch { return str; }
+}
+
 function dataRow(lbl, val) {
-  const empty = !val || val === 'null';
+  const empty = !val || val === 'null' || val === '-';
   return `<div class="data-row">
     <span class="data-lbl">${esc(lbl)}</span>
     <span class="data-val${empty ? ' data-val--empty' : ''}">${esc(empty ? '—' : val)}</span>
@@ -95,29 +104,33 @@ function render(app, p) {
   const tr = getTranslation(p);
   const name    = tv(p, tr, 'product_name');
   const brand   = tv(p, tr, 'brand_name');
-  const mfrName = tv(p, tr, 'manufacturer_name');
+  const mfrName = tv(p, tr, 'manufacturer_name') || p.manufacturer_name || '';
   const mfrMail = p.manufacturer_email || '';
   const mfrAddr = p.manufacturer_address || '';
 
-  const materials    = tlist(p, tr, 'materials_json',            'materials');
-  const care         = tlist(p, tr, 'care_instructions_json',    'care_instructions');
-  const repair       = tlist(p, tr, 'repair_instructions_json',  'repair_instructions');
-  const recycling    = tlist(p, tr, 'recycling_instructions_json','recycling_instructions');
-  const safety       = tlist(p, tr, 'safety_notes_json',         'safety_notes');
+  const materials = tlist(p, tr, 'materials_json',             'materials');
+  const care      = tlist(p, tr, 'care_instructions_json',     'care_instructions');
+  const repair    = tlist(p, tr, 'repair_instructions_json',   'repair_instructions');
+  const recycling = tlist(p, tr, 'recycling_instructions_json','recycling_instructions');
+  const safety    = tlist(p, tr, 'safety_notes_json',          'safety_notes');
+
+  const mfrSection = (mfrName || mfrMail || mfrAddr)
+    ? section('Valmistaja',
+        (mfrName ? dataRow('Nimi', mfrName) : '') +
+        (mfrMail ? dataRow('Sähköposti', mfrMail) : '') +
+        (mfrAddr ? dataRow('Osoite', mfrAddr) : ''))
+    : '';
 
   app.innerHTML = `
+    <div class="system-badge">Digitaalinen tuotepassi</div>
+
     <div class="pp-header">
       ${pillHtml(p.status)}
       <h1 class="pp-name">${esc(name)}</h1>
       ${brand ? `<p class="pp-brand">${esc(brand)}</p>` : ''}
     </div>
 
-    ${section('Valmistaja',
-        dataRow('Nimi', mfrName) +
-        (mfrMail ? dataRow('Sähköposti', mfrMail) : '') +
-        (mfrAddr ? dataRow('Osoite', mfrAddr) : '')
-    )}
-
+    ${mfrSection}
     ${listSection('Materiaalit', materials)}
     ${listSection('Hoito-ohjeet', care)}
     ${listSection('Korjausohjeet', repair)}
@@ -126,16 +139,24 @@ function render(app, p) {
 
     <div class="section">
       <div class="section-head">Passin tunnisteet</div>
-      ${monoRow('product_uid',    p.product_uid,    true)}
-      ${monoRow('passport_uid',   p.passport_uid,   true)}
-      ${monoRow('identifier',     p.identifier_level, false)}
-      ${monoRow('data_carrier',   p.data_carrier_type, false)}
-      ${monoRow('version',        String(p.version), false)}
+      ${monoRow('product_uid',  p.product_uid,  true)}
+      ${monoRow('passport_uid', p.passport_uid, true)}
+      ${monoRow('identifier',   p.identifier_level, false)}
+      ${monoRow('carrier',      p.data_carrier_type, false)}
+      ${monoRow('version',      String(p.version), false)}
     </div>
 
     <div class="pp-footer">
       <div class="pp-footer-item">
-        <span class="f-lbl">Digitaalinen tuotepassi</span>
+        <span class="f-lbl">Päivitetty</span>
+        <span class="f-val">${esc(formatDate(p.updated_at || p.created_at))}</span>
+      </div>
+      <div class="pp-footer-item">
+        <span class="f-lbl">Versio</span>
+        <span class="f-val">${esc(String(p.version))}</span>
+      </div>
+      <div class="pp-footer-item">
+        <span class="f-lbl">passport_uid</span>
         <span class="f-val">${esc(p.passport_uid)}</span>
       </div>
     </div>
@@ -144,8 +165,7 @@ function render(app, p) {
   app.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
     btn.addEventListener('click', () => {
       navigator.clipboard.writeText(btn.dataset.copy).then(() => {
-        btn.textContent = '✓';
-        btn.classList.add('copied');
+        btn.textContent = '✓'; btn.classList.add('copied');
         setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1500);
       });
     });

@@ -36,7 +36,7 @@ const VISIBILITY_ELIGIBLE_FIELDS = [
 const ALWAYS_VISIBLE_FIELDS = [
   'public_slug', 'product_uid', 'passport_uid', 'data_carrier_type',
   'data_carrier_url', 'identifier_level', 'status', 'version', 'languages_json',
-  'translations_json',
+  'translations_json', 'updated_at', 'created_at',
 ];
 
 const DEFAULT_CONSUMER_VISIBILITY = [

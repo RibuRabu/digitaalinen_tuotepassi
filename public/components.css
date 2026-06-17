@@ -158,6 +158,9 @@ a:hover { text-decoration: underline; }
   font-size: var(--text-xs);
   color: var(--c-accent);
   word-break: break-all;
+  background: var(--c-accent-dim);
+  padding: .15rem .4rem;
+  border-radius: var(--r-sm);
 }
 
 /* ── Copy button ────────────────────────────────────── */
@@ -436,6 +439,54 @@ input[type="file"] {
   padding: .45rem .65rem;
   width: 100%;
   cursor: pointer;
+}
+
+/* ── Top accent stripe ──────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--c-accent);
+  opacity: .3;
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* ── Page fade-in ───────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page { animation: fade-up 150ms var(--ease) both; }
+
+/* ── Hover on data rows ─────────────────────────────── */
+.data-row {
+  transition: background var(--dur) var(--ease);
+  cursor: default;
+}
+.data-row:hover { background: rgba(255,255,255,.018); }
+
+/* ── System badge (public page top label) ───────────── */
+.system-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-text-3);
+  margin-bottom: var(--sp-6);
+}
+.system-badge::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: var(--c-accent);
+  flex-shrink: 0;
 }
 
 input[type="file"]::file-selector-button {
