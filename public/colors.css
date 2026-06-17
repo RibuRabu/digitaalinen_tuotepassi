@@ -1,26 +1,26 @@
 :root {
-  --c-bg:          #0B0D10;
-  --c-surface-1:   #12161B;
-  --c-surface-2:   #1A1F26;
-  --c-surface-3:   #222A33;
-  --c-border:      #232B35;
-  --c-border-dim:  #1C2229;
+  --c-bg:        #F4F6F8;
+  --c-surface-1: #FFFFFF;
+  --c-surface-2: #F0F2F5;
+  --c-surface-3: #E8EBF0;
+  --c-border:    #D4D9E1;
+  --c-border-dim:#E2E6EC;
 
-  --c-text-1:  #F3F5F7;
-  --c-text-2:  #95A1AE;
-  --c-text-3:  #55626F;
+  --c-text-1: #0D1117;
+  --c-text-2: #4B5563;
+  --c-text-3: #9CA3AF;
 
-  --c-accent:       #5CC8FF;
-  --c-accent-dim:   rgba(92,200,255,.10);
-  --c-accent-ring:  rgba(92,200,255,.25);
+  --c-accent:      #0A6DC2;
+  --c-accent-dim:  rgba(10,109,194,.07);
+  --c-accent-ring: rgba(10,109,194,.22);
 
-  --c-ok:       #4BC47D;
-  --c-ok-dim:   rgba(75,196,125,.10);
-  --c-ok-ring:  rgba(75,196,125,.25);
+  --c-ok:       #15803D;
+  --c-ok-dim:   rgba(21,128,61,.08);
+  --c-ok-ring:  rgba(21,128,61,.22);
 
-  --c-warn:      #FF6B6B;
-  --c-warn-dim:  rgba(255,107,107,.10);
-  --c-warn-ring: rgba(255,107,107,.25);
+  --c-warn:      #C4282A;
+  --c-warn-dim:  rgba(196,40,42,.08);
+  --c-warn-ring: rgba(196,40,42,.22);
 
-  --c-neutral-dim: rgba(149,161,174,.08);
+  --c-neutral-dim: rgba(75,85,99,.07);
 }
