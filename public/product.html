@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tuotepassi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div class="page" id="app">
-  <p class="muted">Ladataan tuotetietoja...</p>
+  <p class="msg msg--mute">Ladataan...</p>
 </div>
 <script>
 async function main() {
@@ -16,36 +19,26 @@ async function main() {
   const slug = match ? match[1] : '';
   const app = document.getElementById('app');
   if (!slug) {
-    console.error('Virheellinen tuotelinkki, pathname:', location.pathname);
-    app.innerHTML = '<p class="error">Virheellinen tuotelinkki.</p>';
+    console.error('Virheellinen tuotelinkki:', location.pathname);
+    app.innerHTML = '<p class="msg msg--err">Virheellinen tuotelinkki.</p>';
     return;
   }
   let res;
-  try {
-    res = await fetch(`/api/public/product/${encodeURIComponent(slug)}`);
-  } catch {
-    app.innerHTML = '<p class="error">Virhe yhteydessä.</p>';
-    return;
-  }
-  if (!res.ok) {
-    app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
-    return;
-  }
+  try { res = await fetch(`/api/public/product/${encodeURIComponent(slug)}`); }
+  catch { app.innerHTML = '<p class="msg msg--err">Virhe yhteydessä.</p>'; return; }
+  if (!res.ok) { app.innerHTML = '<p class="msg msg--err">Tuotetta ei löytynyt.</p>'; return; }
   const p = await res.json();
   render(app, p);
 }
 
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function parseList(json) {
-  try {
-    const v = JSON.parse(json || '[]');
-    return Array.isArray(v) ? v : [];
-  } catch { return []; }
+  try { const v = JSON.parse(json || '[]'); return Array.isArray(v) ? v : []; }
+  catch { return []; }
 }
 
 function getTranslation(p) {
@@ -55,69 +48,108 @@ function getTranslation(p) {
   return trans[lang] || {};
 }
 
-function t(p, trans, key) {
+function tv(p, trans, key) {
   const v = trans[key];
   return (v !== undefined && v !== '') ? v : (p[key] ?? '');
 }
 
-function tList(p, trans, jsonKey, transKey) {
+function tlist(p, trans, jsonKey, transKey) {
   if (Array.isArray(trans[transKey]) && trans[transKey].length > 0) return trans[transKey];
   return parseList(p[jsonKey]);
 }
 
-function listCard(title, items) {
+function dataRow(lbl, val) {
+  const empty = !val || val === 'null';
+  return `<div class="data-row">
+    <span class="data-lbl">${esc(lbl)}</span>
+    <span class="data-val${empty ? ' data-val--empty' : ''}">${esc(empty ? '—' : val)}</span>
+  </div>`;
+}
+
+function monoRow(lbl, val, copy) {
+  return `<div class="mono-row">
+    <span class="mono-lbl">${esc(lbl)}</span>
+    <code class="mono-val">${esc(val)}</code>
+    ${copy ? `<button class="copy-btn" data-copy="${esc(val)}">⎘</button>` : ''}
+  </div>`;
+}
+
+function section(title, body) {
+  if (!body.trim()) return '';
+  return `<div class="section"><div class="section-head">${esc(title)}</div><div>${body}</div></div>`;
+}
+
+function listSection(title, items) {
   if (!items.length) return '';
-  return `
-    <div class="card">
-      <h2>${escapeHtml(title)}</h2>
-      <ul class="materials">${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
-    </div>`;
+  return section(title,
+    `<ul class="data-list">${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`);
+}
+
+function pillHtml(status) {
+  const map = { active: ['pill--active','Julkaistu'], archived: ['pill--archived','Arkistoitu'] };
+  const [cls, lbl] = map[status] || ['pill--draft','Luonnos'];
+  return `<span class="pill ${cls}">${lbl}</span>`;
 }
 
 function render(app, p) {
-  const trans = getTranslation(p);
+  const tr = getTranslation(p);
+  const name    = tv(p, tr, 'product_name');
+  const brand   = tv(p, tr, 'brand_name');
+  const mfrName = tv(p, tr, 'manufacturer_name');
+  const mfrMail = p.manufacturer_email || '';
+  const mfrAddr = p.manufacturer_address || '';
 
-  const productName = t(p, trans, 'product_name');
-  const brandName = t(p, trans, 'brand_name');
-  const manufacturerName = t(p, trans, 'manufacturer_name');
-  const manufacturerEmail = t(p, trans, 'manufacturer_email');
-  const manufacturerAddress = t(p, trans, 'manufacturer_address');
-
-  const materials = tList(p, trans, 'materials_json', 'materials');
-  const safetyNotes = tList(p, trans, 'safety_notes_json', 'safety_notes');
-  const careInstructions = tList(p, trans, 'care_instructions_json', 'care_instructions');
-  const repairInstructions = tList(p, trans, 'repair_instructions_json', 'repair_instructions');
-  const recyclingInstructions = tList(p, trans, 'recycling_instructions_json', 'recycling_instructions');
+  const materials    = tlist(p, tr, 'materials_json',            'materials');
+  const care         = tlist(p, tr, 'care_instructions_json',    'care_instructions');
+  const repair       = tlist(p, tr, 'repair_instructions_json',  'repair_instructions');
+  const recycling    = tlist(p, tr, 'recycling_instructions_json','recycling_instructions');
+  const safety       = tlist(p, tr, 'safety_notes_json',         'safety_notes');
 
   app.innerHTML = `
-    <div class="card">
-      <span class="badge ${p.status === 'active' ? 'active' : ''}">${escapeHtml(p.status)}</span>
-      <h1>${escapeHtml(productName)}</h1>
-      <p class="muted">${escapeHtml(brandName)}</p>
+    <div class="pp-header">
+      ${pillHtml(p.status)}
+      <h1 class="pp-name">${esc(name)}</h1>
+      ${brand ? `<p class="pp-brand">${esc(brand)}</p>` : ''}
     </div>
 
-    <div class="card">
-      <h2>Valmistaja</h2>
-      <p>${escapeHtml(manufacturerName || '-')}</p>
-      <p class="muted">${escapeHtml(manufacturerEmail)}</p>
-      <p class="muted">${escapeHtml(manufacturerAddress)}</p>
+    ${section('Valmistaja',
+        dataRow('Nimi', mfrName) +
+        (mfrMail ? dataRow('Sähköposti', mfrMail) : '') +
+        (mfrAddr ? dataRow('Osoite', mfrAddr) : '')
+    )}
+
+    ${listSection('Materiaalit', materials)}
+    ${listSection('Hoito-ohjeet', care)}
+    ${listSection('Korjausohjeet', repair)}
+    ${listSection('Kierrätysohjeet', recycling)}
+    ${listSection('Turvallisuustiedot', safety)}
+
+    <div class="section">
+      <div class="section-head">Passin tunnisteet</div>
+      ${monoRow('product_uid',    p.product_uid,    true)}
+      ${monoRow('passport_uid',   p.passport_uid,   true)}
+      ${monoRow('identifier',     p.identifier_level, false)}
+      ${monoRow('data_carrier',   p.data_carrier_type, false)}
+      ${monoRow('version',        String(p.version), false)}
     </div>
 
-    ${listCard('Materiaalit', materials)}
-    ${listCard('Hoito-ohjeet', careInstructions)}
-    ${listCard('Korjausohjeet', repairInstructions)}
-    ${listCard('Kierrätysohjeet', recyclingInstructions)}
-    ${listCard('Turvallisuustiedot', safetyNotes)}
-
-    <div class="card">
-      <h2>Tuotepassin tunnisteet</h2>
-      <p class="muted">Tuotetunniste (UID): ${escapeHtml(p.product_uid)}</p>
-      <p class="muted">Passin tunniste: ${escapeHtml(p.passport_uid)}</p>
-      <p class="muted">Tunnistetaso: ${escapeHtml(p.identifier_level)}</p>
-      <p class="muted">Data carrier: ${escapeHtml(p.data_carrier_type)}</p>
-      <p class="muted">Versio: ${escapeHtml(p.version)}</p>
+    <div class="pp-footer">
+      <div class="pp-footer-item">
+        <span class="f-lbl">Digitaalinen tuotepassi</span>
+        <span class="f-val">${esc(p.passport_uid)}</span>
+      </div>
     </div>
   `;
+
+  app.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+        btn.textContent = '✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1500);
+      });
+    });
+  });
 }
 
 main();

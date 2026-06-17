@@ -4,84 +4,103 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Admin – Digitaalinen tuotepassi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div class="page">
-  <div class="card">
-    <h1>Admin</h1>
-    <p class="muted">Digitaalinen tuotepassi – tuotepassien hallinta</p>
+  <div class="sys-header">
+    <div>
+      <h1>Admin</h1>
+      <span class="sys-sub">Digitaalinen tuotepassi – hallintapaneeli</span>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>Admin-salasana</h2>
-    <div class="field">
-      <label for="admin-secret">ADMIN_SECRET</label>
-      <input type="password" id="admin-secret" autocomplete="current-password" placeholder="Salasana">
+  <div class="form-section">
+    <div class="form-section-head">Autentikointi</div>
+    <div class="form-field">
+      <label class="form-lbl" for="admin-secret">ADMIN_SECRET</label>
+      <input class="form-input" type="password" id="admin-secret" autocomplete="current-password" placeholder="Bearer-salasana">
     </div>
-    <button id="auth-btn">Aseta</button>
-    <p class="status-msg" id="auth-msg"></p>
+    <div class="form-actions">
+      <button class="btn btn-secondary" id="auth-btn">Aseta</button>
+      <span class="msg" id="auth-msg"></span>
+    </div>
   </div>
 
-  <form class="card" id="create-form">
-    <h2>Luo uusi tuotepassi</h2>
-    <div class="field">
-      <label for="product_name">Tuotteen nimi *</label>
-      <input id="product_name" name="product_name" required placeholder="esim. Ekologinen villajumpperi">
+  <form id="create-form">
+    <div class="form-section">
+      <div class="form-section-head">Luo uusi tuotepassi</div>
+      <div class="form-field">
+        <label class="form-lbl" for="product_name">Tuotteen nimi *</label>
+        <input class="form-input" id="product_name" name="product_name" required placeholder="esim. Ekologinen villajumpperi">
+      </div>
+      <div class="form-field">
+        <label class="form-lbl" for="brand_name">Brändi</label>
+        <input class="form-input" id="brand_name" name="brand_name" placeholder="esim. Luonto Design">
+      </div>
+      <div class="form-field">
+        <label class="form-lbl" for="manufacturer_name">Valmistaja</label>
+        <input class="form-input" id="manufacturer_name" name="manufacturer_name" placeholder="esim. Luonto Oy">
+      </div>
     </div>
-    <div class="field">
-      <label for="brand_name">Brändi</label>
-      <input id="brand_name" name="brand_name" placeholder="esim. Luonto Design">
+
+    <div class="form-section">
+      <div class="form-section-head">Asiakastiedot (sisäinen)</div>
+      <div class="form-field">
+        <label class="form-lbl" for="customer_name">Asiakkaan nimi</label>
+        <input class="form-input" id="customer_name" name="customer_name" placeholder="esim. Luonto Oy – Matti Meikäläinen">
+      </div>
+      <div class="form-field">
+        <label class="form-lbl" for="customer_email">Asiakkaan sähköposti</label>
+        <input class="form-input" type="email" id="customer_email" name="customer_email" placeholder="asiakas@yritys.fi">
+      </div>
     </div>
-    <div class="field">
-      <label for="manufacturer_name">Valmistaja</label>
-      <input id="manufacturer_name" name="manufacturer_name" placeholder="esim. Luonto Oy">
+
+    <div class="form-section">
+      <div class="form-section-head">Passin asetukset</div>
+      <div class="form-field">
+        <label class="form-lbl" for="identifier_level">Tunnistetaso</label>
+        <select class="form-select" id="identifier_level" name="identifier_level">
+          <option value="model">model – mallikohtainen</option>
+          <option value="batch">batch – eräkohtainen</option>
+          <option value="item">item – yksilökohtainen</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-lbl" for="data_carrier_type">Data carrier</label>
+        <select class="form-select" id="data_carrier_type" name="data_carrier_type">
+          <option value="qr">QR-koodi</option>
+          <option value="nfc">NFC</option>
+          <option value="rfid">RFID</option>
+          <option value="barcode">Viivakoodi</option>
+        </select>
+      </div>
     </div>
-    <div class="field">
-      <label for="customer_name">Asiakkaan nimi (sisäinen)</label>
-      <input id="customer_name" name="customer_name" placeholder="esim. Luonto Oy – kirjanpito">
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" id="create-btn">Luo tuotepassi</button>
+      <span class="msg" id="create-msg"></span>
     </div>
-    <div class="field">
-      <label for="customer_email">Asiakkaan sähköposti (sisäinen)</label>
-      <input type="email" id="customer_email" name="customer_email" placeholder="asiakas@yritys.fi">
-    </div>
-    <div class="field">
-      <label for="identifier_level">Tunnistetaso</label>
-      <select id="identifier_level" name="identifier_level">
-        <option value="model">Mallikohtainen (model)</option>
-        <option value="batch">Eräkohtainen (batch)</option>
-        <option value="item">Yksilökohtainen (item)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="data_carrier_type">Data carrier</label>
-      <select id="data_carrier_type" name="data_carrier_type">
-        <option value="qr">QR-koodi</option>
-        <option value="nfc">NFC</option>
-        <option value="rfid">RFID</option>
-        <option value="barcode">Viivakoodi</option>
-      </select>
-    </div>
-    <button type="submit" id="create-btn">Luo tuotepassi</button>
-    <p class="status-msg" id="create-msg"></p>
   </form>
 
   <div id="results"></div>
 </div>
 <script>
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-function getSecret() {
-  return sessionStorage.getItem('dpp_admin_secret') || '';
-}
+function getSecret() { return sessionStorage.getItem('dpp_admin_secret') || ''; }
 
 let _qr = null;
-async function loadQRLib() {
+async function loadQR() {
   if (_qr) return _qr;
   if (window.QRCode) { _qr = window.QRCode; return _qr; }
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
     s.onload = () => { _qr = window.QRCode; resolve(_qr); };
@@ -90,88 +109,77 @@ async function loadQRLib() {
   });
 }
 
-function linkBlock(label, url, openable) {
-  const su = escapeHtml(url);
-  return `
-    <div class="field">
-      <label>${escapeHtml(label)}</label>
-      <div class="link-row">
-        <input readonly value="${su}" class="link-input">
-        <button type="button" class="btn-secondary" data-copy="${su}">Kopioi</button>
-        ${openable ? `<a href="${su}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>` : ''}
-      </div>
-    </div>`;
+function setMsg(el, text, type) { el.textContent = text; el.className = `msg msg--${type}`; }
+
+function linkRow(label, url, openable) {
+  const su = esc(url);
+  return `<div class="form-field">
+    <label class="form-lbl">${esc(label)}</label>
+    <div class="link-row">
+      <input class="form-input" readonly value="${su}">
+      <button type="button" class="btn btn-ghost" data-copy="${su}">⎘</button>
+      ${openable ? `<a href="${su}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration:none">↗</a>` : ''}
+    </div>
+  </div>`;
 }
 
-function resultCard(productName, data) {
+function resultCard(name, data) {
   const origin = location.origin;
-  const publicUrl = `${origin}/p/${data.slug}`;
-  const ownerUrl = `${origin}/owner/${data.token}`;
-  const passportUrl = `${origin}/api/passport/${encodeURIComponent(data.product_uid)}`;
-  return `
-    <div class="card result-card">
-      <h2>Luotu: ${escapeHtml(productName)}</h2>
-      ${linkBlock('Julkinen passilinkki (QR / NFC)', publicUrl, true)}
-      ${linkBlock('Owner-hallintayhteys (salainen)', ownerUrl, true)}
-      ${linkBlock('Koneluettava passi-API', passportUrl, false)}
-      <div class="qr-block">
-        <canvas class="qr-canvas"></canvas>
-        <div>
-          <p class="muted" style="font-size:.8rem;margin:.25rem 0 .5rem">QR → ${escapeHtml(publicUrl)}</p>
-          <button type="button" class="btn-secondary qr-download-btn">Lataa PNG</button>
-        </div>
+  const pub     = `${origin}/p/${data.slug}`;
+  const owner   = `${origin}/owner/${data.token}`;
+  const passport = `${origin}/api/passport/${encodeURIComponent(data.product_uid)}`;
+
+  return `<div class="form-section result-card" data-pub="${esc(pub)}">
+    <div class="form-section-head">Luotu: ${esc(name)}</div>
+    ${linkRow('Julkinen passilinkki (QR / NFC)', pub, true)}
+    ${linkRow('Owner-hallintayhteys (salainen – tallenna heti)', owner, true)}
+    ${linkRow('Koneluettava passi-API', passport, false)}
+    <div class="qr-block">
+      <canvas class="qr-canvas"></canvas>
+      <div class="qr-meta">
+        <span class="qr-label">${esc(pub)}</span>
+        <button type="button" class="btn btn-secondary qr-dl-btn" style="margin-top:.5rem">Lataa QR PNG</button>
       </div>
-      <p class="muted" style="margin-top:.75rem;font-size:.8rem">Tallenna owner-linkki heti – sitä ei voi hakea myöhemmin ilman admin-tunnuksia.</p>
-    </div>`;
+    </div>
+  </div>`;
 }
 
 function main() {
-  const storedSecret = getSecret();
-  if (storedSecret) {
-    document.getElementById('admin-secret').value = storedSecret;
-    const m = document.getElementById('auth-msg');
-    m.textContent = 'Salasana asetettu istunnolle.';
-    m.className = 'status-msg muted';
+  const stored = getSecret();
+  if (stored) {
+    document.getElementById('admin-secret').value = stored;
+    setMsg(document.getElementById('auth-msg'), 'Salasana asetettu istunnolle.', 'mute');
   }
 
   document.getElementById('auth-btn').addEventListener('click', () => {
     const val = document.getElementById('admin-secret').value.trim();
-    const m = document.getElementById('auth-msg');
-    if (!val) { m.className = 'status-msg error'; m.textContent = 'Anna salasana ensin.'; return; }
+    const msg = document.getElementById('auth-msg');
+    if (!val) { setMsg(msg, 'Anna salasana ensin.', 'err'); return; }
     sessionStorage.setItem('dpp_admin_secret', val);
-    m.className = 'status-msg';
-    m.textContent = 'Asetettu.';
+    setMsg(msg, 'Asetettu.', 'ok');
   });
 
-  document.getElementById('create-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  document.getElementById('create-form').addEventListener('submit', async ev => {
+    ev.preventDefault();
     const msg = document.getElementById('create-msg');
     const secret = getSecret();
-    if (!secret) {
-      msg.className = 'status-msg error';
-      msg.textContent = 'Aseta ensin admin-salasana yllä.';
-      return;
-    }
+    if (!secret) { setMsg(msg, 'Aseta admin-salasana ensin.', 'err'); return; }
 
     const btn = document.getElementById('create-btn');
     btn.disabled = true;
-    msg.className = 'status-msg muted';
-    msg.textContent = 'Luodaan...';
+    setMsg(msg, 'Luodaan...', 'mute');
 
-    const productName = document.getElementById('product_name').value.trim();
+    const name = document.getElementById('product_name').value.trim();
     const payload = {
-      product_name: productName,
+      product_name: name,
       identifier_level: document.getElementById('identifier_level').value,
       data_carrier_type: document.getElementById('data_carrier_type').value,
     };
-    const brand = document.getElementById('brand_name').value.trim();
-    const mfr = document.getElementById('manufacturer_name').value.trim();
-    const custName = document.getElementById('customer_name').value.trim();
-    const custEmail = document.getElementById('customer_email').value.trim();
-    if (brand) payload.brand_name = brand;
-    if (mfr) payload.manufacturer_name = mfr;
-    if (custName) payload.customer_name = custName;
-    if (custEmail) payload.customer_email = custEmail;
+    const f = (id) => document.getElementById(id).value.trim();
+    if (f('brand_name'))      payload.brand_name      = f('brand_name');
+    if (f('manufacturer_name')) payload.manufacturer_name = f('manufacturer_name');
+    if (f('customer_name'))   payload.customer_name   = f('customer_name');
+    if (f('customer_email'))  payload.customer_email  = f('customer_email');
 
     try {
       const res = await fetch('/api/admin/product/create', {
@@ -179,59 +187,37 @@ function main() {
         headers: { 'content-type': 'application/json', 'authorization': `Bearer ${secret}` },
         body: JSON.stringify(payload),
       });
-
-      if (res.status === 401) {
-        msg.className = 'status-msg error';
-        msg.textContent = 'Väärä admin-salasana.';
-        return;
-      }
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        msg.className = 'status-msg error';
-        msg.textContent = `Virhe: ${err.error || res.status}`;
-        return;
-      }
+      if (res.status === 401) { setMsg(msg, 'Väärä admin-salasana.', 'err'); return; }
+      if (!res.ok) { const e = await res.json().catch(() => ({})); setMsg(msg, `Virhe: ${e.error || res.status}`, 'err'); return; }
 
       const data = await res.json();
       msg.textContent = '';
-      e.target.reset();
+      ev.target.reset();
 
-      document.getElementById('results').insertAdjacentHTML('afterbegin', resultCard(productName, data));
+      document.getElementById('results').insertAdjacentHTML('afterbegin', resultCard(name, data));
 
       const newCard = document.getElementById('results').firstElementChild;
-      const canvas = newCard.querySelector('.qr-canvas');
-      const publicUrl = `${location.origin}/p/${data.slug}`;
-      const qr = await loadQRLib();
-      if (qr && canvas) {
-        qr.toCanvas(canvas, publicUrl, { width: 180, margin: 1 }).catch(() => {});
-      }
-    } catch {
-      msg.className = 'status-msg error';
-      msg.textContent = 'Yhteysvirhe.';
-    } finally {
-      btn.disabled = false;
-    }
+      const canvas  = newCard.querySelector('.qr-canvas');
+      const pub     = newCard.dataset.pub;
+      const qr = await loadQR();
+      if (qr && canvas) qr.toCanvas(canvas, pub, { width: 160, margin: 1 }).catch(() => {});
+    } catch { setMsg(msg, 'Yhteysvirhe.', 'err'); }
+    finally { btn.disabled = false; }
   });
 
-  document.addEventListener('click', (e) => {
-    const copyBtn = e.target.closest('[data-copy]');
+  // Event delegation: copy + QR download
+  document.addEventListener('click', ev => {
+    const copyBtn = ev.target.closest('[data-copy]');
     if (copyBtn) {
       navigator.clipboard.writeText(copyBtn.dataset.copy).then(() => {
         const orig = copyBtn.textContent;
-        copyBtn.textContent = 'Kopioitu!';
+        copyBtn.textContent = '✓';
         setTimeout(() => { copyBtn.textContent = orig; }, 1500);
       });
     }
-
-    if (e.target.classList.contains('qr-download-btn')) {
-      const block = e.target.closest('.qr-block');
-      const canvas = block?.querySelector('.qr-canvas');
-      if (canvas) {
-        const a = document.createElement('a');
-        a.download = 'qr-code.png';
-        a.href = canvas.toDataURL('image/png');
-        a.click();
-      }
+    if (ev.target.classList.contains('qr-dl-btn')) {
+      const canvas = ev.target.closest('.qr-block')?.querySelector('.qr-canvas');
+      if (canvas) { const a = document.createElement('a'); a.download = 'qr-code.png'; a.href = canvas.toDataURL('image/png'); a.click(); }
     }
   });
 }

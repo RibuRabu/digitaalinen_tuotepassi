@@ -1,0 +1,26 @@
+:root {
+  --c-bg:          #0B0D10;
+  --c-surface-1:   #12161B;
+  --c-surface-2:   #1A1F26;
+  --c-surface-3:   #222A33;
+  --c-border:      #232B35;
+  --c-border-dim:  #1C2229;
+
+  --c-text-1:  #F3F5F7;
+  --c-text-2:  #95A1AE;
+  --c-text-3:  #55626F;
+
+  --c-accent:       #5CC8FF;
+  --c-accent-dim:   rgba(92,200,255,.10);
+  --c-accent-ring:  rgba(92,200,255,.25);
+
+  --c-ok:       #4BC47D;
+  --c-ok-dim:   rgba(75,196,125,.10);
+  --c-ok-ring:  rgba(75,196,125,.25);
+
+  --c-warn:      #FF6B6B;
+  --c-warn-dim:  rgba(255,107,107,.10);
+  --c-warn-ring: rgba(255,107,107,.25);
+
+  --c-neutral-dim: rgba(149,161,174,.08);
+}

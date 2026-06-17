@@ -3,94 +3,74 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Muokkaa tuotepassia</title>
+<title>Hallintapaneeli – Tuotepassi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div class="page" id="app">
-  <p class="muted">Ladataan...</p>
+  <p class="msg msg--mute">Ladataan...</p>
 </div>
 <script>
 const TEXT_FIELDS = [
-  ['product_name', 'Tuotteen nimi', 'input'],
-  ['brand_name', 'Brändi', 'input'],
-  ['manufacturer_name', 'Valmistaja', 'input'],
-  ['manufacturer_email', 'Valmistajan sähköposti', 'input'],
-  ['manufacturer_address', 'Valmistajan osoite', 'textarea'],
-  ['responsible_operator_name', 'Vastuullinen toimija', 'input'],
-  ['responsible_operator_email', 'Vastuullisen toimijan sähköposti', 'input'],
-  ['responsible_operator_address', 'Vastuullisen toimijan osoite', 'textarea'],
-  ['product_type', 'Tuotetyyppi', 'input'],
-  ['sku', 'SKU', 'input'],
-  ['gtin', 'GTIN', 'input'],
-  ['batch_number', 'Eränumero', 'input'],
-  ['serial_number', 'Sarjanumero', 'input'],
+  ['product_name',                  'Tuotteen nimi',                    'input'],
+  ['brand_name',                    'Brändi',                           'input'],
+  ['manufacturer_name',             'Valmistaja',                       'input'],
+  ['manufacturer_email',            'Valmistajan sähköposti',           'input'],
+  ['manufacturer_address',          'Valmistajan osoite',               'textarea'],
+  ['responsible_operator_name',     'Vastuullinen toimija',             'input'],
+  ['responsible_operator_email',    'Vastuullisen toimijan sähköposti', 'input'],
+  ['responsible_operator_address',  'Vastuullisen toimijan osoite',     'textarea'],
+  ['product_type',                  'Tuotetyyppi',                      'input'],
+  ['sku',                           'SKU',                              'input'],
+  ['gtin',                          'GTIN',                             'input'],
+  ['batch_number',                  'Eränumero',                        'input'],
+  ['serial_number',                 'Sarjanumero',                      'input'],
 ];
 
 const LIST_FIELDS = [
-  ['materials', 'materials_json', 'Materiaalit (pilkulla eroteltuna)'],
-  ['substances', 'substances_json', 'Huomioitavat aineet (pilkulla eroteltuna)'],
-  ['safety_notes', 'safety_notes_json', 'Turvallisuustiedot (pilkulla eroteltuna)'],
-  ['care_instructions', 'care_instructions_json', 'Hoito-ohjeet (pilkulla eroteltuna)'],
-  ['repair_instructions', 'repair_instructions_json', 'Korjausohjeet (pilkulla eroteltuna)'],
-  ['recycling_instructions', 'recycling_instructions_json', 'Kierrätysohjeet (pilkulla eroteltuna)'],
+  ['materials',            'materials_json',            'Materiaalit (pilkulla eroteltuna)'],
+  ['substances',           'substances_json',           'Huomioitavat aineet'],
+  ['safety_notes',         'safety_notes_json',         'Turvallisuustiedot'],
+  ['care_instructions',    'care_instructions_json',    'Hoito-ohjeet'],
+  ['repair_instructions',  'repair_instructions_json',  'Korjausohjeet'],
+  ['recycling_instructions','recycling_instructions_json','Kierrätysohjeet'],
 ];
 
-const TRANS_LANGS = [
-  ['en', 'English'],
-  ['sv', 'Svenska'],
-  ['de', 'Deutsch'],
-  ['fr', 'Français'],
-  ['et', 'Eesti'],
-  ['lv', 'Latviešu'],
-  ['lt', 'Lietuvių'],
-  ['pl', 'Polski'],
-];
-
-const TRANS_TEXT = [
-  ['product_name', 'Tuotteen nimi'],
-  ['brand_name', 'Brändi'],
-  ['product_type', 'Tuotetyyppi'],
-];
-
-const TRANS_LISTS = [
-  ['materials', 'Materiaalit (yksi per rivi)'],
-  ['care_instructions', 'Hoito-ohjeet (yksi per rivi)'],
-  ['repair_instructions', 'Korjausohjeet (yksi per rivi)'],
-  ['recycling_instructions', 'Kierrätysohjeet (yksi per rivi)'],
-  ['safety_notes', 'Turvallisuustiedot (yksi per rivi)'],
-];
+const TRANS_LANGS  = [['en','English'],['sv','Svenska'],['de','Deutsch'],['fr','Français'],['et','Eesti'],['lv','Latviešu'],['lt','Lietuvių'],['pl','Polski']];
+const TRANS_TEXT   = [['product_name','Tuotteen nimi'],['brand_name','Brändi'],['product_type','Tuotetyyppi']];
+const TRANS_LISTS  = [['materials','Materiaalit'],['care_instructions','Hoito-ohjeet'],['repair_instructions','Korjausohjeet'],['recycling_instructions','Kierrätysohjeet'],['safety_notes','Turvallisuustiedot']];
 
 let currentToken = '';
 let allTranslations = {};
 let activeLang = 'en';
 
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function esc(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function parseList(json) {
-  try {
-    const v = JSON.parse(json || '[]');
-    return Array.isArray(v) ? v : [];
-  } catch { return []; }
+  try { const v = JSON.parse(json || '[]'); return Array.isArray(v) ? v : []; }
+  catch { return []; }
 }
 
 function parseDocs(json) {
-  const items = parseList(json);
-  return items.map(d => (typeof d === 'string' ? { name: d, url: '' } : d));
+  return parseList(json).map(d => typeof d === 'string' ? { name: d, url: '' } : d);
 }
 
 function getToken() {
-  const match = location.pathname.match(/^\/owner\/([^/]+)\/?$/);
-  return match ? match[1] : '';
+  const m = location.pathname.match(/^\/owner\/([^/]+)\/?$/);
+  return m ? m[1] : '';
 }
 
 let _qr = null;
-async function loadQRLib() {
+async function loadQR() {
   if (_qr) return _qr;
   if (window.QRCode) { _qr = window.QRCode; return _qr; }
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
     s.onload = () => { _qr = window.QRCode; resolve(_qr); };
@@ -99,285 +79,264 @@ async function loadQRLib() {
   });
 }
 
+function pillHtml(status) {
+  const map = { active: ['pill--active','Julkaistu'], archived: ['pill--archived','Arkistoitu'] };
+  const [cls, lbl] = map[status] || ['pill--draft','Luonnos'];
+  return `<span class="pill ${cls}">${lbl}</span>`;
+}
+
+function monoRow(lbl, val, copy) {
+  return `<div class="mono-row">
+    <span class="mono-lbl">${esc(lbl)}</span>
+    <code class="mono-val">${esc(val)}</code>
+    ${copy ? `<button class="copy-btn" data-copy="${esc(val)}">⎘</button>` : ''}
+  </div>`;
+}
+
+function formField(key, label, type, value) {
+  const v = esc(value ?? '');
+  const input = type === 'textarea'
+    ? `<textarea class="form-textarea" id="${key}" name="${key}">${v}</textarea>`
+    : `<input class="form-input" id="${key}" name="${key}" value="${v}">`;
+  return `<div class="form-field"><label class="form-lbl" for="${key}">${esc(label)}</label>${input}</div>`;
+}
+
 async function main() {
   currentToken = getToken();
   const app = document.getElementById('app');
-  if (!currentToken) {
-    app.innerHTML = '<p class="error">Virheellinen hallintayhteys.</p>';
-    return;
-  }
+  if (!currentToken) { app.innerHTML = '<p class="msg msg--err">Virheellinen hallintayhteys.</p>'; return; }
 
   let res;
-  try {
-    res = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`);
-  } catch {
-    app.innerHTML = '<p class="error">Virhe yhteydessä.</p>';
-    return;
-  }
-  if (!res.ok) {
-    app.innerHTML = '<p class="error">Tuotetta ei löytynyt.</p>';
-    return;
-  }
+  try { res = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`); }
+  catch { app.innerHTML = '<p class="msg msg--err">Virhe yhteydessä.</p>'; return; }
+  if (!res.ok) { app.innerHTML = '<p class="msg msg--err">Tuotetta ei löytynyt.</p>'; return; }
 
-  const product = await res.json();
-  renderAll(app, product);
+  const p = await res.json();
+  renderAll(app, p);
 }
 
-function renderAll(app, product) {
-  const publicUrl = `${location.origin}/p/${encodeURIComponent(product.public_slug)}`;
-  const docs = parseDocs(product.compliance_documents_json);
+function renderAll(app, p) {
+  const publicUrl = `${location.origin}/p/${encodeURIComponent(p.public_slug)}`;
+  const docs = parseDocs(p.compliance_documents_json);
 
-  const textFieldsHtml = TEXT_FIELDS.map(([key, label, type]) => `
-    <div class="field">
-      <label for="${key}">${escapeHtml(label)}</label>
-      ${type === 'textarea'
-        ? `<textarea id="${key}" name="${key}">${escapeHtml(product[key])}</textarea>`
-        : `<input id="${key}" name="${key}" value="${escapeHtml(product[key])}">`}
-    </div>
-  `).join('');
-
-  const listFieldsHtml = LIST_FIELDS.map(([key, jsonKey, label]) => `
-    <div class="field">
-      <label for="${key}">${escapeHtml(label)}</label>
-      <input id="${key}" name="${key}" value="${escapeHtml(parseList(product[jsonKey]).join(', '))}">
-    </div>
-  `).join('');
+  const textFieldsHtml = TEXT_FIELDS.map(([k, l, t]) => formField(k, l, t, p[k])).join('');
+  const listFieldsHtml = LIST_FIELDS.map(([k, jk, l]) =>
+    formField(k, `${l} (pilkulla eroteltuna)`, 'input', parseList(p[jk]).join(', '))
+  ).join('');
 
   const docsHtml = docs.length
-    ? docs.map(d => `
-        <div class="doc-item">
-          <span class="doc-name">${escapeHtml(d.name)}</span>
-          ${d.url ? `<a href="${escapeHtml(d.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>` : ''}
-        </div>`).join('')
-    : '<p class="muted">Ei asiakirjoja vielä.</p>';
+    ? docs.map(d => `<div class="doc-item">
+        <span class="doc-name">${esc(d.name)}</span>
+        ${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>` : ''}
+      </div>`).join('')
+    : '<div class="empty-state">Ei asiakirjoja.</div>';
 
-  const transLangOptions = TRANS_LANGS.map(([code, label]) =>
-    `<option value="${code}">${label}</option>`).join('');
-
-  const transTextHtml = TRANS_TEXT.map(([key, label]) => `
-    <div class="field">
-      <label for="tr_${key}">${escapeHtml(label)}</label>
-      <input id="tr_${key}" name="tr_${key}">
-    </div>`).join('');
-
-  const transListHtml = TRANS_LISTS.map(([key, label]) => `
-    <div class="field">
-      <label for="tr_${key}">${escapeHtml(label)}</label>
-      <textarea id="tr_${key}" name="tr_${key}" style="min-height:4rem"></textarea>
-    </div>`).join('');
+  const transLangOpts = TRANS_LANGS.map(([c, l]) => `<option value="${c}">${l}</option>`).join('');
+  const transTextHtml = TRANS_TEXT.map(([k, l]) =>
+    `<div class="form-field"><label class="form-lbl" for="tr_${k}">${esc(l)}</label><input class="form-input" id="tr_${k}"></div>`
+  ).join('');
+  const transListHtml = TRANS_LISTS.map(([k, l]) =>
+    `<div class="form-field"><label class="form-lbl" for="tr_${k}">${esc(l)} (yksi per rivi)</label><textarea class="form-textarea" id="tr_${k}" style="min-height:3.5rem"></textarea></div>`
+  ).join('');
 
   app.innerHTML = `
-    <div class="card">
-      <h1>${escapeHtml(product.product_name || 'Tuote')}</h1>
-      <p class="muted">Julkinen sivu: <a href="${escapeHtml(publicUrl)}" target="_blank">/p/${escapeHtml(product.public_slug)}</a></p>
-      <p class="muted">Tuotetunniste (UID): ${escapeHtml(product.product_uid)}</p>
-      <p class="muted">Versio: ${escapeHtml(product.version)}</p>
-      <div class="qr-block" style="margin-top:1rem">
+    <div class="sys-header">
+      <div>
+        <h1>${esc(p.product_name || 'Tuote')}</h1>
+        <span class="sys-sub">${esc(p.product_uid)}</span>
+      </div>
+      <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+        ${pillHtml(p.status)}
+        <span class="sys-sub">v${esc(p.version)}</span>
+        <a href="${esc(publicUrl)}" target="_blank" class="btn btn-ghost" style="font-size:.8rem">Julkinen ↗</a>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">Tunnisteet</div>
+      ${monoRow('public_slug',  p.public_slug,  true)}
+      ${monoRow('product_uid',  p.product_uid,  true)}
+      ${monoRow('passport_uid', p.passport_uid, true)}
+      <div class="qr-block">
         <canvas id="qr-canvas"></canvas>
-        <div>
-          <p class="muted" style="font-size:.8rem;margin:.25rem 0 .5rem">Julkinen QR-koodi</p>
-          <button type="button" class="btn-secondary" id="qr-download-btn">Lataa PNG</button>
+        <div class="qr-meta">
+          <span class="qr-label">${esc(publicUrl)}</span>
+          <button type="button" class="btn btn-secondary" id="qr-dl" style="margin-top:.25rem">Lataa PNG</button>
         </div>
       </div>
     </div>
 
-    <form class="card" id="edit-form">
-      <h2>Perustiedot ja tila</h2>
-      <div class="field">
-        <label for="status">Tila</label>
-        <select id="status" name="status">
-          <option value="draft">Luonnos</option>
-          <option value="active">Julkaistu</option>
-          <option value="archived">Arkistoitu</option>
-        </select>
+    <form id="edit-form">
+      <div class="form-section">
+        <div class="form-section-head">Tila</div>
+        <div class="form-field">
+          <label class="form-lbl" for="status">Julkaisutila</label>
+          <select class="form-select" id="status" name="status">
+            <option value="draft">Luonnos (draft)</option>
+            <option value="active">Julkaistu (active)</option>
+            <option value="archived">Arkistoitu (archived)</option>
+          </select>
+        </div>
       </div>
-      ${textFieldsHtml}
-      ${listFieldsHtml}
-      <button type="submit">Tallenna</button>
-      <p class="status-msg" id="edit-msg"></p>
+
+      <div class="form-section">
+        <div class="form-section-head">Perustiedot ja valmistaja</div>
+        ${textFieldsHtml}
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-head">Materiaalit ja ohjeet</div>
+        ${listFieldsHtml}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Tallenna</button>
+        <span class="msg" id="edit-msg"></span>
+      </div>
     </form>
 
-    <div class="card">
-      <h2>Asiakirjat</h2>
+    <div class="form-section">
+      <div class="form-section-head">Asiakirjat ja tiedostot</div>
       <div id="doc-list">${docsHtml}</div>
-      <div style="margin-top:1rem">
-        <div class="field">
-          <label for="doc-file">Lisää tiedosto (PDF, kuva – max 10 MB)</label>
-          <input type="file" id="doc-file" accept=".pdf,image/*">
-        </div>
-        <button type="button" id="doc-upload-btn">Lähetä tiedosto</button>
-        <p class="status-msg" id="doc-msg"></p>
+      <div class="form-field">
+        <label class="form-lbl" for="doc-file">Lisää tiedosto (PDF, kuva – max 10 Mt)</label>
+        <input type="file" id="doc-file" accept=".pdf,image/*">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" id="doc-upload-btn">Lähetä</button>
+        <span class="msg" id="doc-msg"></span>
       </div>
     </div>
 
-    <div class="card">
-      <h2>Käännökset</h2>
-      <p class="muted" style="margin-bottom:1rem;font-size:.85rem">Syötä käännetyt sisällöt EU-myyntiä varten. Kuluttajan selain valitsee automaattisesti oikean kielen.</p>
-      <div class="field">
-        <label for="trans-lang">Kieli</label>
-        <select id="trans-lang">${transLangOptions}</select>
+    <div class="form-section">
+      <div class="form-section-head">Käännökset</div>
+      <div class="form-field">
+        <label class="form-lbl" for="trans-lang">Kieli</label>
+        <select class="form-select" id="trans-lang">${transLangOpts}</select>
+        <p class="form-hint">Kuluttajan selain valitsee automaattisesti oikean kielen.</p>
       </div>
       ${transTextHtml}
       ${transListHtml}
-      <button type="button" id="save-trans-btn">Tallenna käännös</button>
-      <p class="status-msg" id="trans-msg"></p>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" id="save-trans-btn">Tallenna käännös</button>
+        <span class="msg" id="trans-msg"></span>
+      </div>
     </div>
   `;
 
-  document.getElementById('status').value = product.status || 'draft';
+  document.getElementById('status').value = p.status || 'draft';
 
   // QR
-  loadQRLib().then(qr => {
-    const canvas = document.getElementById('qr-canvas');
-    if (qr && canvas) qr.toCanvas(canvas, publicUrl, { width: 160, margin: 1 }).catch(() => {});
+  loadQR().then(qr => {
+    const c = document.getElementById('qr-canvas');
+    if (qr && c) qr.toCanvas(c, publicUrl, { width: 140, margin: 1 }).catch(() => {});
   });
 
-  document.getElementById('qr-download-btn').addEventListener('click', () => {
-    const canvas = document.getElementById('qr-canvas');
-    if (canvas) {
-      const a = document.createElement('a');
-      a.download = `qr-${product.public_slug}.png`;
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    }
+  document.getElementById('qr-dl').addEventListener('click', () => {
+    const c = document.getElementById('qr-canvas');
+    if (!c) return;
+    const a = document.createElement('a');
+    a.download = `qr-${p.public_slug}.png`;
+    a.href = c.toDataURL('image/png');
+    a.click();
+  });
+
+  // Copy buttons
+  app.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+        btn.textContent = '✓'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1500);
+      });
+    });
   });
 
   // Main form
-  document.getElementById('edit-form').addEventListener('submit', async (ev) => {
+  document.getElementById('edit-form').addEventListener('submit', async ev => {
     ev.preventDefault();
     const msg = document.getElementById('edit-msg');
-    msg.textContent = 'Tallennetaan...';
-    msg.className = 'status-msg muted';
-
+    setMsg(msg, 'Tallennetaan...', 'mute');
     const payload = { status: document.getElementById('status').value };
-    for (const [key] of TEXT_FIELDS) {
-      payload[key] = document.getElementById(key).value;
+    for (const [k] of TEXT_FIELDS) payload[k] = document.getElementById(k).value;
+    for (const [k] of LIST_FIELDS) {
+      payload[k] = document.getElementById(k).value.split(',').map(s => s.trim()).filter(Boolean);
     }
-    for (const [key] of LIST_FIELDS) {
-      payload[key] = document.getElementById(key).value
-        .split(',').map(s => s.trim()).filter(Boolean);
-    }
-
     try {
       const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(payload),
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
       });
       if (!r.ok) throw new Error();
-      const updated = await r.json();
-      msg.textContent = `Tallennettu (versio ${updated.version}).`;
-      msg.className = 'status-msg';
-    } catch {
-      msg.textContent = 'Tallennus epäonnistui.';
-      msg.className = 'status-msg error';
-    }
+      const u = await r.json();
+      setMsg(msg, `Tallennettu — versio ${u.version}`, 'ok');
+    } catch { setMsg(msg, 'Tallennus epäonnistui.', 'err'); }
   });
 
   // Document upload
   document.getElementById('doc-upload-btn').addEventListener('click', async () => {
-    const fileInput = document.getElementById('doc-file');
-    const file = fileInput.files[0];
+    const fi = document.getElementById('doc-file');
+    const file = fi.files[0];
     const msg = document.getElementById('doc-msg');
-    if (!file) { msg.textContent = 'Valitse ensin tiedosto.'; msg.className = 'status-msg error'; return; }
-
-    msg.textContent = 'Ladataan...';
-    msg.className = 'status-msg muted';
-
-    const fd = new FormData();
-    fd.append('file', file);
-
+    if (!file) { setMsg(msg, 'Valitse tiedosto ensin.', 'err'); return; }
+    setMsg(msg, 'Ladataan...', 'mute');
+    const fd = new FormData(); fd.append('file', file);
     try {
-      const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}/document`, {
-        method: 'POST',
-        body: fd,
-      });
-      if (!r.ok) {
-        const err = await r.json().catch(() => ({}));
-        msg.textContent = `Virhe: ${err.error || r.status}`;
-        msg.className = 'status-msg error';
-        return;
-      }
+      const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}/document`, { method: 'POST', body: fd });
+      if (!r.ok) { const e = await r.json().catch(() => ({})); setMsg(msg, `Virhe: ${e.error || r.status}`, 'err'); return; }
       const doc = await r.json();
-      msg.textContent = 'Tiedosto tallennettu.';
-      msg.className = 'status-msg';
-      fileInput.value = '';
-
-      const docList = document.getElementById('doc-list');
-      const noDocsMsg = docList.querySelector('p.muted');
-      if (noDocsMsg) noDocsMsg.remove();
-      docList.insertAdjacentHTML('beforeend', `
-        <div class="doc-item">
-          <span class="doc-name">${escapeHtml(doc.name)}</span>
-          <a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>
-        </div>`);
-    } catch {
-      msg.textContent = 'Yhteysvirhe.';
-      msg.className = 'status-msg error';
-    }
+      setMsg(msg, 'Tallennettu.', 'ok'); fi.value = '';
+      const list = document.getElementById('doc-list');
+      const empty = list.querySelector('.empty-state');
+      if (empty) empty.remove();
+      list.insertAdjacentHTML('beforeend', `<div class="doc-item">
+        <span class="doc-name">${esc(doc.name)}</span>
+        <a href="${esc(doc.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>
+      </div>`);
+    } catch { setMsg(msg, 'Yhteysvirhe.', 'err'); }
   });
 
   // Translations
-  try { allTranslations = JSON.parse(product.translations_json || '{}'); } catch { allTranslations = {}; }
-  loadTranslationForLang('en');
+  try { allTranslations = JSON.parse(p.translations_json || '{}'); } catch { allTranslations = {}; }
+  loadLang('en');
 
-  document.getElementById('trans-lang').addEventListener('change', (ev) => {
-    saveActiveLangToState();
-    loadTranslationForLang(ev.target.value);
+  document.getElementById('trans-lang').addEventListener('change', ev => {
+    saveLangState(); loadLang(ev.target.value);
   });
 
   document.getElementById('save-trans-btn').addEventListener('click', async () => {
-    saveActiveLangToState();
+    saveLangState();
     const msg = document.getElementById('trans-msg');
-    msg.textContent = 'Tallennetaan...';
-    msg.className = 'status-msg muted';
-
+    setMsg(msg, 'Tallennetaan...', 'mute');
     try {
       const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ translations: allTranslations }),
       });
       if (!r.ok) throw new Error();
-      const updated = await r.json();
-      msg.textContent = `Käännös tallennettu (versio ${updated.version}).`;
-      msg.className = 'status-msg';
-    } catch {
-      msg.textContent = 'Tallennus epäonnistui.';
-      msg.className = 'status-msg error';
-    }
+      const u = await r.json();
+      setMsg(msg, `Tallennettu — versio ${u.version}`, 'ok');
+    } catch { setMsg(msg, 'Tallennus epäonnistui.', 'err'); }
   });
 }
 
-function loadTranslationForLang(lang) {
-  activeLang = lang;
-  const t = allTranslations[lang] || {};
-  for (const [key] of TRANS_TEXT) {
-    const el = document.getElementById(`tr_${key}`);
-    if (el) el.value = t[key] || '';
-  }
-  for (const [key] of TRANS_LISTS) {
-    const el = document.getElementById(`tr_${key}`);
-    if (el) el.value = Array.isArray(t[key]) ? t[key].join('\n') : '';
-  }
+function setMsg(el, text, type) {
+  el.textContent = text;
+  el.className = `msg msg--${type}`;
 }
 
-function saveActiveLangToState() {
+function loadLang(lang) {
+  activeLang = lang;
+  const t = allTranslations[lang] || {};
+  for (const [k] of TRANS_TEXT) { const el = document.getElementById(`tr_${k}`); if (el) el.value = t[k] || ''; }
+  for (const [k] of TRANS_LISTS) { const el = document.getElementById(`tr_${k}`); if (el) el.value = Array.isArray(t[k]) ? t[k].join('\n') : ''; }
+}
+
+function saveLangState() {
   const t = {};
-  for (const [key] of TRANS_TEXT) {
-    const el = document.getElementById(`tr_${key}`);
-    if (el) t[key] = el.value.trim();
-  }
-  for (const [key] of TRANS_LISTS) {
-    const el = document.getElementById(`tr_${key}`);
-    if (el) t[key] = el.value.split('\n').map(s => s.trim()).filter(Boolean);
-  }
-  const hasContent = Object.values(t).some(v => (Array.isArray(v) ? v.length > 0 : v !== ''));
-  if (hasContent) {
-    allTranslations[activeLang] = t;
-  } else {
-    delete allTranslations[activeLang];
-  }
+  for (const [k] of TRANS_TEXT) { const el = document.getElementById(`tr_${k}`); if (el) t[k] = el.value.trim(); }
+  for (const [k] of TRANS_LISTS) { const el = document.getElementById(`tr_${k}`); if (el) t[k] = el.value.split('\n').map(s => s.trim()).filter(Boolean); }
+  const hasContent = Object.values(t).some(v => Array.isArray(v) ? v.length > 0 : v !== '');
+  if (hasContent) allTranslations[activeLang] = t;
+  else delete allTranslations[activeLang];
 }
 
 main();
