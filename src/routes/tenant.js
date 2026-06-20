@@ -1,7 +1,7 @@
 import {
   json, newId, newSlug,
   TEXT_FIELDS, JSON_ARRAY_FIELDS, VISIBILITY_ELIGIBLE_FIELDS,
-  STATUSES, DATA_CARRIER_TYPES, IDENTIFIER_LEVELS,
+  STATUSES, COMPLIANCE_STATUSES, DATA_CARRIER_TYPES, IDENTIFIER_LEVELS,
   SUPPORTED_LANGS, TRANS_TEXT_FIELDS, TRANS_LIST_FIELDS,
   ALLOWED_FILE_TYPES, MAX_FILE_SIZE,
 } from '../utils.js';
@@ -72,6 +72,8 @@ export async function handleCreateProduct(request, env) {
   const baseColumns = buildCreateProductColumns();
   const baseValues = buildCreateProductValues(body, id, slug, token, productUid, passportUid);
 
+  // #2: tenant_id is always derived from JWT — never from request body
+  if (!ctx.tenant.id) return json({ error: 'internal_error' }, 500);
   const columns = [...baseColumns, 'tenant_id'];
   const values = [...baseValues, ctx.tenant.id];
 
@@ -96,7 +98,28 @@ export async function handleGetProduct(request, env, slug) {
   ).bind(slug, ctx.tenant.id).first();
   if (!product) return json({ error: 'not_found' }, 404);
 
-  return json(product);
+  // #4: build compliance_documents_json from product_documents table; fall back to JSON blob for legacy products
+  const { results: dbDocs } = await env.DB.prepare(
+    'SELECT id, name, file_key, file_type, file_size, uploaded_at FROM product_documents WHERE product_id = ? ORDER BY uploaded_at ASC'
+  ).bind(product.id).all();
+  const complianceDocsJson = dbDocs.length > 0
+    ? JSON.stringify(dbDocs.map(d => ({ id: d.id, name: d.name, url: `/api/files/${d.file_key}`, uploaded_at: d.uploaded_at })))
+    : product.compliance_documents_json;
+
+  // #5: build translations_json from product_translations table; fall back to JSON blob for legacy products
+  const { results: dbTrans } = await env.DB.prepare(
+    'SELECT lang, data_json FROM product_translations WHERE product_id = ?'
+  ).bind(product.id).all();
+  let translationsJson = product.translations_json;
+  if (dbTrans.length > 0) {
+    const merged = {};
+    for (const row of dbTrans) {
+      try { merged[row.lang] = JSON.parse(row.data_json); } catch { merged[row.lang] = {}; }
+    }
+    translationsJson = JSON.stringify(merged);
+  }
+
+  return json({ ...product, compliance_documents_json: complianceDocsJson, translations_json: translationsJson });
 }
 
 // POST /api/tenant/product/:slug (update)
@@ -137,12 +160,29 @@ export async function handleUpdateProduct(request, env, slug) {
     if (body.status === 'active' && !existing.published_at) needsPublishedAt = true;
   }
 
+  // #9: compliance workflow status — separate from publication status
+  if ('compliance_status' in body) {
+    if (!COMPLIANCE_STATUSES.includes(body.compliance_status)) return json({ error: 'invalid_compliance_status' }, 400);
+    updates.compliance_status = body.compliance_status;
+  }
+
   if ('visible_to_consumer' in body) {
     if (!Array.isArray(body.visible_to_consumer)) return json({ error: 'invalid_visibility' }, 400);
     let visibility = {};
     try { visibility = JSON.parse(existing.visibility_json || '{}'); } catch {}
     visibility.consumer = body.visible_to_consumer.filter(f => VISIBILITY_ELIGIBLE_FIELDS.includes(f));
     updates.visibility_json = JSON.stringify(visibility);
+  }
+
+  if ('category_id' in body) {
+    updates.category_id = body.category_id || null;
+  }
+
+  if ('target_markets' in body) {
+    if (!Array.isArray(body.target_markets)) return json({ error: 'invalid_target_markets' }, 400);
+    const VALID = new Set(['EU','FI','DE','FR','SE','EE','LV','LT','PL','DK','NO','ES','IT','NL']);
+    const markets = body.target_markets.filter(m => VALID.has(m));
+    updates.target_markets_json = JSON.stringify(markets.length > 0 ? markets : ['EU']);
   }
 
   if ('translations' in body && body.translations !== null && typeof body.translations === 'object') {
@@ -158,6 +198,14 @@ export async function handleUpdateProduct(request, env, slug) {
       }
     }
     updates.translations_json = JSON.stringify(clean);
+    // #5: also write per-language rows to product_translations for queryability
+    for (const [lang, data] of Object.entries(clean)) {
+      await env.DB.prepare(
+        `INSERT INTO product_translations (id, product_id, lang, data_json, updated_at)
+         VALUES (?, ?, ?, ?, datetime('now'))
+         ON CONFLICT(product_id, lang) DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at`
+      ).bind(newId(), existing.id, lang, JSON.stringify(data)).run();
+    }
   }
 
   if (Object.keys(updates).length === 0) return json({ error: 'no_fields' }, 400);
@@ -229,10 +277,18 @@ export async function handleUploadDocument(request, env, slug) {
   });
 
   const fileUrl = `/api/files/${key}`;
+  const docId = newId();
+
+  // #4: write to product_documents table (primary store going forward)
+  await env.DB.prepare(
+    'INSERT INTO product_documents (id, product_id, tenant_id, name, file_key, file_type, file_size) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).bind(docId, product.id, ctx.tenant.id, file.name, key, file.type, file.size || 0).run();
+
+  // Keep JSON blob updated so legacy reads and existing products still work
   let docs = [];
   try { docs = JSON.parse(product.compliance_documents_json || '[]'); } catch {}
   docs = docs.map(d => typeof d === 'string' ? { name: d, url: '' } : d);
-  docs.push({ name: file.name, url: fileUrl });
+  docs.push({ id: docId, name: file.name, url: fileUrl });
 
   await env.DB.prepare(
     "UPDATE products SET compliance_documents_json = ?, version = version + 1, updated_at = datetime('now') WHERE public_slug = ? AND tenant_id = ?"
@@ -242,7 +298,7 @@ export async function handleUploadDocument(request, env, slug) {
     "INSERT INTO product_events (id, product_id, event_type, event_data_json, actor_type) VALUES (?, ?, 'document_uploaded', ?, 'tenant')"
   ).bind(newId(), product.id, JSON.stringify({ key, name: file.name, by: ctx.userId })).run();
 
-  return json({ url: fileUrl, name: file.name }, 201);
+  return json({ id: docId, url: fileUrl, name: file.name }, 201);
 }
 
 // POST /api/tenant/product/:slug/share-link
@@ -258,7 +314,7 @@ export async function handleRegenerateShareLink(request, env, slug) {
 
   const newToken = newId();
   await env.DB.prepare(
-    "UPDATE products SET owner_token = ?, updated_at = datetime('now') WHERE public_slug = ? AND tenant_id = ?"
+    "UPDATE products SET owner_token = ?, version = version + 1, updated_at = datetime('now') WHERE public_slug = ? AND tenant_id = ?"
   ).bind(newToken, slug, ctx.tenant.id).run();
 
   await env.DB.prepare(

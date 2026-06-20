@@ -32,6 +32,7 @@ export async function handlePassport(env, productUid) {
     identifier_level: product.identifier_level,
     version: product.version,
     status: product.status,
+    compliance_status: product.compliance_status ?? 'not_started',
     data_carrier: { type: product.data_carrier_type, url: product.data_carrier_url },
     languages,
     product: consumerDataFields(product),

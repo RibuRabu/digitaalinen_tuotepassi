@@ -37,6 +37,7 @@ export const DEFAULT_CONSUMER_VISIBILITY = [
 ];
 
 export const STATUSES = ['draft', 'active', 'archived'];
+export const COMPLIANCE_STATUSES = ['not_started', 'in_progress', 'complete', 'verified'];
 export const DATA_CARRIER_TYPES = ['qr', 'nfc', 'rfid', 'barcode'];
 export const IDENTIFIER_LEVELS = ['model', 'batch', 'item'];
 export const SUPPORTED_LANGS = ['en', 'sv', 'de', 'fr', 'et', 'lv', 'lt', 'pl'];

@@ -1,0 +1,19 @@
+UPDATE products SET
+  product_name = 'Merinovillapaita Classic',
+  brand_name = 'Luonto Design',
+  manufacturer_name = 'Luonto Tekstiilit Oy',
+  manufacturer_email = 'info@luontotekstiilit.fi',
+  manufacturer_address = 'Puistokatu 12, 00100 Helsinki, Suomi',
+  product_type = 'Tekstiili – neulos',
+  status = 'active',
+  identifier_level = 'model',
+  data_carrier_type = 'qr',
+  materials_json = '["97% merinovilla","3% elastaani"]',
+  care_instructions_json = '["Pese 30°C villaohjelma","Älä linko","Kuivata vaakasuorassa"]',
+  repair_instructions_json = '["Käytä villaneulan korjaussarjaa","Ohjeet: luontotekstiilit.fi/korjaus"]',
+  recycling_instructions_json = '["Toimita tekstiilikeräykseen","Ei sekajätteeseen","Kelpaava UFF, Kierrätyskeskus tai kirpputori"]',
+  safety_notes_json = '["Soveltuu sensitiiviselle iholle","Väriaineet REACH-yhteensopivia"]',
+  translations_json = '{"en":{"product_name":"Classic Merino Wool Jumper","brand_name":"Luonto Design","product_type":"Textile – knitwear","materials":["97% merino wool","3% elastane"],"care_instructions":["Machine wash 30°C wool programme","Do not spin","Dry flat"],"repair_instructions":["Use wool darning kit","Guide: luontotekstiilit.fi/repair"],"recycling_instructions":["Take to textile collection point","Not general waste","Suitable for charity shops or resale"],"safety_notes":["Suitable for sensitive skin","Dyes are REACH compliant"]}}',
+  version = version + 1,
+  updated_at = datetime('now')
+WHERE public_slug = 'test';

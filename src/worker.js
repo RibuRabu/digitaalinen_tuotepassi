@@ -13,6 +13,7 @@ import {
   handleUploadDocument, handleRegenerateShareLink, handleClaimProduct,
 } from './routes/tenant.js';
 import { handleClerkWebhook } from './routes/webhooks.js';
+import { handleCompliance } from './routes/compliance.js';
 
 function serveAsset(request, env, pathname) {
   const target = new URL(request.url);
@@ -57,6 +58,19 @@ export default {
     // ── Machine-readable passport (no auth) ──────────────────────────────────
     else if (pathname.startsWith('/api/passport/') && method === 'GET') {
       const uid = decodeURIComponent(pathname.slice('/api/passport/'.length));
+      response = await handlePassport(env, uid);
+    }
+
+    // ── Versioned compliance check ────────────────────────────────────────────
+    else if (pathname.startsWith('/api/v1/passport/') && pathname.endsWith('/compliance') && method === 'GET') {
+      const rest = pathname.slice('/api/v1/passport/'.length);
+      const uid = decodeURIComponent(rest.slice(0, -'/compliance'.length));
+      response = await handleCompliance(env, uid);
+    }
+
+    // ── Versioned passport alias — stable for EU regulatory integrations ───────
+    else if (pathname.startsWith('/api/v1/passport/') && method === 'GET') {
+      const uid = decodeURIComponent(pathname.slice('/api/v1/passport/'.length));
       response = await handlePassport(env, uid);
     }
 
