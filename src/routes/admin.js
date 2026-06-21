@@ -167,7 +167,7 @@ export async function handleGetTenant(request, env, tenantId) {
   if (!tenant) return json({ error: 'not_found' }, 404);
 
   const { results: products } = await env.DB.prepare(
-    `SELECT id, public_slug, product_name, status, version, created_at
+    `SELECT id, public_slug, product_name, status, version, created_at, owner_token
      FROM products WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 100`
   ).bind(tenantId).all();
 
@@ -222,6 +222,53 @@ export async function handleAdminClaimProduct(request, env, tenantId, slug) {
   ).bind(newId(), product.id, JSON.stringify({ tenant_id: tenantId, by: admin.clerk_user_id })).run();
 
   return json({ ok: true, tenant_id: tenantId, slug });
+}
+
+export async function handleAdminCreateProductForTenant(request, env, tenantId) {
+  const admin = await requirePlatformAdmin(request, env);
+  if (!admin) return json({ error: 'unauthorized' }, 401);
+
+  const tenant = await env.DB.prepare(
+    'SELECT id, product_limit, status FROM tenants WHERE id = ? AND deleted_at IS NULL'
+  ).bind(tenantId).first();
+  if (!tenant) return json({ error: 'tenant_not_found' }, 404);
+  if (!['trial', 'active'].includes(tenant.status)) return json({ error: 'tenant_inactive' }, 403);
+
+  const countRow = await env.DB.prepare(
+    "SELECT COUNT(*) as n FROM products WHERE tenant_id = ? AND status != 'archived'"
+  ).bind(tenantId).first();
+  if ((countRow?.n || 0) >= tenant.product_limit) {
+    return json({ error: 'product_limit_reached', limit: tenant.product_limit }, 403);
+  }
+
+  let body;
+  try { body = await request.json(); }
+  catch { return json({ error: 'invalid_json' }, 400); }
+
+  if (!body.product_name?.trim()) return json({ error: 'product_name_required' }, 400);
+  if (body.identifier_level && !IDENTIFIER_LEVELS.includes(body.identifier_level))
+    return json({ error: 'invalid_identifier_level' }, 400);
+  if (body.data_carrier_type && !DATA_CARRIER_TYPES.includes(body.data_carrier_type))
+    return json({ error: 'invalid_data_carrier_type' }, 400);
+
+  const id = newId();
+  const slug = newSlug();
+  const ownerToken = newId();
+  const productUid = crypto.randomUUID();
+  const passportUid = crypto.randomUUID();
+
+  const columns = [...buildCreateProductColumns(), 'tenant_id'];
+  const values = [...buildCreateProductValues(body, id, slug, ownerToken, productUid, passportUid), tenantId];
+
+  await env.DB.prepare(
+    `INSERT INTO products (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`
+  ).bind(...values).run();
+
+  await env.DB.prepare(
+    "INSERT INTO product_events (id, product_id, event_type, event_data_json, actor_type) VALUES (?, ?, 'created', ?, 'platform_admin')"
+  ).bind(newId(), id, JSON.stringify({ tenant_id: tenantId, by: admin.clerk_user_id })).run();
+
+  return json({ id, product_uid: productUid, public_slug: slug, owner_token: ownerToken, passport_uid: passportUid }, 201);
 }
 
 export async function handleUpdateTenant(request, env, tenantId) {

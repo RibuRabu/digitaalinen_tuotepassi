@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "digitaalinen-tuotepassi" generated at 2026-06-21T12:51:29.148Z.

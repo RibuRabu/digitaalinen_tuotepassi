@@ -5,7 +5,7 @@ import { handleServeFile } from './routes/files.js';
 import {
   handleGetAdminProduct, handleCreateProduct, handleUpdateCarrier,
   handleListTenants, handleGetTenant, handleListUnclaimedProducts,
-  handleAdminClaimProduct, handleUpdateTenant,
+  handleAdminClaimProduct, handleUpdateTenant, handleAdminCreateProductForTenant,
 } from './routes/admin.js';
 import {
   handleListProducts, handleCreateProduct as handleTenantCreateProduct,
@@ -152,7 +152,10 @@ export default {
         } else {
           const tenantId = tenantRest.slice(0, tenantSlashIdx);
           const afterTenant = tenantRest.slice(tenantSlashIdx + 1);
-          if (afterTenant.startsWith('product/') && afterTenant.endsWith('/claim') && method === 'POST') {
+          if (afterTenant === 'product' && method === 'POST') {
+            response = await handleAdminCreateProductForTenant(request, env, tenantId);
+          }
+          else if (afterTenant.startsWith('product/') && afterTenant.endsWith('/claim') && method === 'POST') {
             const slug = decodeURIComponent(afterTenant.slice('product/'.length, -'/claim'.length));
             response = await handleAdminClaimProduct(request, env, tenantId, slug);
           }
