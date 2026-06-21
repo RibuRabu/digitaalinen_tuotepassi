@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "category": "TEXTILES",
+    "generated": "2026-06-16",
+    "schema_version": "0004",
+    "notes": [
+      "TEXTILES category (cat_textiles) and ESPR_TEXTILES regulation (reg_espr_textiles, mandatory=0) already exist in the DB.",
+      "ESPR_TEXTILES_MATERIALS and ESPR_TEXTILES_CARE rules already check materials_json and care_instructions_json respectively — under the DRAFT regulation (opt-in).",
+      "This file adds rules under ACTIVE mandatory regulations: Textile Labeling Regulation (EU 1007/2011) and REACH. These fill the gap where tenants who have not opted into ESPR_TEXTILES would otherwise receive no field-level validation.",
+      "REACH Annex XVII Entry 72 (formaldehyde in finished articles) is excluded from textiles here: the threshold is 300mg/kg for textiles worn directly against the skin (EN ISO 14184-1/2). This maps to an upcoming Textile Ecodesign requirement rather than a currently directly enforceable limit on the digital passport. Included instead as a document requirement.",
+      "EN ISO 14362-1:2017 is the harmonised test method for azo colorants releasing carcinogenic amines from dyed textile materials (REACH Annex XVII Entry 43).",
+      "ESPR_TEXTILES_RECYCLING already covers recycling_instructions_json for TEXTILES under the draft reg. A mandatory-reg equivalent is not yet in force; EPR_REPAIR_INSTRUCTIONS does not cover TEXTILES. The gap is noted but not fabricated."
+    ],
+    "new_regulations_required": [
+      {
+        "id": "reg_reach",
+        "code": "REACH",
+        "name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
+        "description": "Regulation (EC) No 1907/2006. Annex XVII Entry 43 restricts azo dyes in textiles; Art. 33 mandates SVHC communication.",
+        "version": "1907/2006",
+        "effective_date": "2007-06-01",
+        "status": "active"
+      },
+      {
+        "id": "reg_textile_labeling",
+        "code": "TEXTILE_LABELING",
+        "name": "Textile Fibre Composition Labelling Regulation",
+        "description": "Regulation (EU) No 1007/2011 on textile fibre names and related labelling and marking requirements.",
+        "version": "1007/2011",
+        "effective_date": "2012-11-08",
+        "status": "active"
+      }
+    ],
+    "category_regulations_required": [
+      {
+        "id": "cr_reach_tex",
+        "category_id": "cat_textiles",
+        "regulation_id": "reg_reach",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "REACH Annex XVII Entry 43 (azo dyes) is mandatory for textile articles placed on the EU market."
+      },
+      {
+        "id": "cr_textile_label_tex",
+        "category_id": "cat_textiles",
+        "regulation_id": "reg_textile_labeling",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "EU 1007/2011 mandates fiber composition labeling for all textile products on the EU market."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "rule_tex_label_01",
+      "rule_code": "TEXT_LABEL_FIBER_COMP",
+      "rule_version": 1,
+      "regulation_code": "TEXTILE_LABELING",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "materials_json",
+      "condition_json": { "category_codes": ["TEXTILES"], "min": 1 },
+      "message_en": "Textile fiber composition must be declared by fiber name and percentage of total weight. All component fibers must be listed (EU 1007/2011 Art. 11). Decorative parts <7% and hidden processing fibers are exempt.",
+      "message_fi": "Tekstiilituotteen kuitukoostumus on ilmoitettava kuitunimellä ja prosenttiosuudella kokonaispainosta. Kaikki komponenttikuidut on lueteltava (asetus (EU) 1007/2011, Art. 11). Alle 7 %:n koristeosat ja piilotetut prosessointikuidut on vapautettu.",
+      "legal_reference": "Regulation (EU) No 1007/2011, Art. 11 — mandatory indication of textile fibre composition; Art. 12 — labelling of fibre names and compositions; Annex I — approved fibre names",
+      "confidence_level": 99,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_tex_label_02",
+      "rule_code": "TEXT_LABEL_CARE",
+      "rule_version": 1,
+      "regulation_code": "TEXTILE_LABELING",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "care_instructions_json",
+      "condition_json": { "category_codes": ["TEXTILES"], "min": 1 },
+      "message_en": "Care instructions (washing, drying, ironing, bleaching, dry-cleaning) must be provided on textile products. ISO 3758:2012 symbols are the established standard across EU member states. Required in practice for market access in most MS.",
+      "message_fi": "Tekstiilituotteiden hoito-ohjeet (pesu, kuivaus, silitys, valkaisu, kemiallinen pesu) on annettava. ISO 3758:2012 -symbolit ovat vakiintuneet EU:n jäsenvaltioissa. Vaatimus on käytännössä edellytys markkinoille pääsylle useimmissa jäsenvaltioissa.",
+      "legal_reference": "Regulation (EU) No 1007/2011, Art. 15 — voluntary care labelling widely transposed as mandatory; ISO 3758:2012 (care labelling code using symbols); note that care labelling is mandatory under national law in several MS (e.g. FR, IT)",
+      "confidence_level": 89,
+      "requires_human_review": true,
+      "requirement_scope": "country_specific",
+      "human_review_reason": "EU 1007/2011 makes fiber composition labelling mandatory but care labelling under Art. 15 is technically voluntary at EU level. However, several member states (France, Italy, others) mandate it nationally, making it effectively mandatory for broad EU market access. Confidence 89% — flag for human review rather than asserting as mandatory_EU error."
+    },
+    {
+      "id": "rule_tex_reach_01",
+      "rule_code": "TEXT_REACH_SUBSTANCES",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["TEXTILES"], "min": 1 },
+      "message_en": "Textile products must be assessed for REACH restricted substances. Declare or confirm absence of: azo colorants releasing carcinogenic amines (Annex XVII Entry 43, limit 30 mg/kg), SVHC candidates present above 0.1% w/w (Art. 33), and formaldehyde where applicable.",
+      "message_fi": "Tekstiilituotteet on arvioitava REACH-rajoitettujen aineiden osalta. Ilmoita tai vahvista seuraavien aineiden puuttuminen: syöpää aiheuttavia aromaattisia amiineja vapauttavat atsovärit (liite XVII, kohta 43, raja-arvo 30 mg/kg), SVHC-ehdokkaat yli 0,1 % (p/p) pitoisuudella (Art. 33) sekä formaldehydi tapauksen mukaan.",
+      "legal_reference": "REACH Annex XVII Entry 43 (Azo Dyes — carcinogenic amines from azo colorants); Art. 33 (communication on substances of very high concern in articles); (EC) No 1907/2006",
+      "confidence_level": 93,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_tex_reach_02",
+      "rule_code": "TEXT_REACH_AZO_DOC",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_document",
+      "severity": "warning",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["TEXTILES"],
+        "doc_name_pattern": "azo|EN.*14362|ISO.*14362|chemical.*test|dye.*test|substance.*test|REACH.*43|supplier.*chemical|restricted.*substance"
+      },
+      "message_en": "Test documentation for azo dye compliance (EN ISO 14362-1:2017 / EN ISO 14362-3:2017) or a supplier chemical declaration covering REACH Annex XVII Entry 43 is recommended for textile products sold on the EU market.",
+      "message_fi": "Atsovärien vaatimustenmukaisuuden testausdokumentti (EN ISO 14362-1:2017 / EN ISO 14362-3:2017) tai toimittajan kemikaalivakuutus REACH-asetuksen liitteen XVII kohdan 43 osalta on suositeltava EU:n markkinoille saatettaville tekstiilituotteille.",
+      "legal_reference": "REACH Annex XVII Entry 43; EN ISO 14362-1:2017 (azo dyes — detection of carcinogenic amines); EN ISO 14362-3:2017 (detection of 4-aminoazobenzene); (EC) No 1907/2006",
+      "confidence_level": 92,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_tex_espr_01",
+      "rule_code": "TEXT_ESPR_RECYCLED_CONTENT",
+      "rule_version": 1,
+      "regulation_code": "ESPR_TEXTILES",
+      "rule_type": "required_array_min",
+      "severity": "info",
+      "field_path": "materials_json",
+      "condition_json": { "category_codes": ["TEXTILES"], "min": 1 },
+      "message_en": "(Draft — not yet in force) The forthcoming ESPR delegated act for textiles is expected to require labelling of recycled fibre content by percentage. Begin declaring recycled material percentages within material declarations to prepare for this requirement.",
+      "message_fi": "(Luonnos — ei vielä voimassa) Tekstiilien tulevan ESPR-delegoidun asetuksen odotetaan edellyttävän kierrätettyjen kuitujen prosenttiosuuden merkitsemistä. Aloita kierrätysmateriaaliprosentin ilmoittaminen materiaalitiedoissa tätä vaatimusta varten valmistautuaksesi.",
+      "legal_reference": "ESPR Regulation (EU) 2024/1781, Art. 4 — ecodesign requirements; ESPR Working Plan 2022–2024 (textiles); European Commission SWD(2023)166 (textiles delegated act preparatory study — recycled content as candidate requirement)",
+      "confidence_level": 70,
+      "requires_human_review": true,
+      "requirement_scope": "draft",
+      "human_review_reason": "The ESPR textiles delegated act had not been formally adopted as of the knowledge cutoff. The specific recycled content threshold and measurement method are under study. Do not enforce as error or warning until the delegated act is published in the Official Journal."
+    }
+  ]
+}

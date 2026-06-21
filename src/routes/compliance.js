@@ -100,6 +100,17 @@ export async function handleCompliance(env, productUid) {
     for (const row of mandatory) activeRegIds.add(row.regulation_id);
   }
 
+  // Activate regulations that have globally-applicable rules (always:true)
+  // regardless of category assignment. Required so GPSR fires on every product.
+  const { results: globalRegs } = await env.DB.prepare(`
+    SELECT DISTINCT rr.regulation_id
+    FROM regulation_rules rr
+    JOIN regulations r ON r.id = rr.regulation_id
+    WHERE rr.condition_json LIKE '%"always":true%'
+      AND r.status = 'active'
+  `).all();
+  for (const row of globalRegs) activeRegIds.add(row.regulation_id);
+
   if (product.tenant_id) {
     const { results: overrides } = await env.DB.prepare(
       'SELECT regulation_id, enabled FROM tenant_regulations WHERE tenant_id = ?'
@@ -162,8 +173,9 @@ export async function handleCompliance(env, productUid) {
     }
   }
 
-  const score = computeScore(ruleResults);
-  const status = hasErrorFail ? 'incomplete' : 'complete';
+  // A product with no applicable rules cannot be complete — score 0, not 100.
+  const score = ruleResults.length === 0 ? 0 : computeScore(ruleResults);
+  const status = hasErrorFail || ruleResults.length === 0 ? 'incomplete' : 'complete';
 
   // Deduplicated regulation metadata
   const regMap = new Map();

@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "category": "FURNITURE",
+    "generated": "2026-06-16",
+    "schema_version": "0004",
+    "notes": [
+      "FURNITURE category (cat_furniture) and category_regulations for GPSR (mandatory=1) already exist.",
+      "GPSR global rules fire for all categories including FURNITURE. No GPSR field-level rules are duplicated here.",
+      "REACH Annex XVII Entry 72 (formaldehyde emissions from wood-based products) applies when the furniture contains wood-based panels, MDF, particleboard, plywood, or similar engineered wood. It does NOT apply to solid wood or fully metal/plastic furniture. A schema-level furniture_construction_type field would allow more precise scoping — currently not available.",
+      "EU Deforestation Regulation (EUDR) (EU) 2023/1115 applies to wood products in its Annex I scope. Furniture containing wood is included. Implementation has been controversial: the Commission proposed a one-year delay (to Dec 30 2025 for large operators, Jun 30 2026 for SMEs) which was under legislative process in late 2024. Status should be verified against Official Journal before enforcing as error.",
+      "Fire safety for upholstered furniture: there is NO EU-harmonised flammability standard for furniture. Requirements are national: UK BS 5852:2006, France NF D60-013, Germany no specific requirement for private furniture. Rules here reflect this fragmentation and are marked country_specific with requires_human_review.",
+      "ESPR Furniture: the ESPR Working Plan 2022–2024 includes furniture as a product group under study. Delegated act not yet adopted. Rules under ESPR_FURNITURE are informational (severity='info') and require human review.",
+      "EN 12521:2015 / EN 12520:2015 (domestic tables/chairs stability and strength) are harmonised standards under GPSR. They support GPSR compliance but are not independently mandated by name in EU law. Referenced in GPSR Art. 7 presumption of conformity.",
+      "Furniture EPR: some EU member states have furniture-specific EPR schemes (France REP ameublement via Eco-mobilier; Belgium, Spain partially). No EU-wide harmonised furniture EPR regulation exists as of 2026. Country-specific — excluded from mandatory EU-wide rules."
+    ],
+    "new_regulations_required": [
+      {
+        "id": "reg_reach",
+        "code": "REACH",
+        "name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
+        "description": "Regulation (EC) No 1907/2006. Annex XVII Entry 72 restricts formaldehyde emissions from wood-based products. Art. 33 mandates SVHC communication.",
+        "version": "1907/2006",
+        "effective_date": "2007-06-01",
+        "status": "active"
+      },
+      {
+        "id": "reg_eudr",
+        "code": "EUDR",
+        "name": "EU Deforestation Regulation",
+        "description": "Regulation (EU) 2023/1115 on the making available on the Union market and the export from the Union of certain commodities and products associated with deforestation and forest degradation. Wood products in Annex I scope include furniture containing wood.",
+        "version": "2023/1115",
+        "effective_date": "2024-12-30",
+        "status": "active",
+        "implementation_note": "Application deadline delayed: large operators Dec 30 2025; SMEs Jun 30 2026 (under Council/Parliament agreement in 2024 — verify final OJ publication before enforcing as error)."
+      },
+      {
+        "id": "reg_espr_furniture",
+        "code": "ESPR_FURNITURE",
+        "name": "Ecodesign for Sustainable Products — Furniture (Working Plan)",
+        "description": "Delegated act under ESPR (EU) 2024/1781 for furniture. Material composition, recyclability, durability, and circular economy requirements under development. Delegated act not yet adopted as of 2026.",
+        "version": "2024/draft",
+        "effective_date": null,
+        "status": "draft"
+      }
+    ],
+    "category_regulations_required": [
+      {
+        "id": "cr_reach_fur",
+        "category_id": "cat_furniture",
+        "regulation_id": "reg_reach",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "REACH applies to furniture articles: formaldehyde (Entry 72), SVHC in coatings/foams/textiles (Art. 33), flame retardants (various entries)."
+      },
+      {
+        "id": "cr_eudr_fur",
+        "category_id": "cat_furniture",
+        "regulation_id": "reg_eudr",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "EUDR applies to wooden furniture in the Annex I scope. Note delayed implementation — verify OJ status before enforcing as blocking error."
+      },
+      {
+        "id": "cr_espr_fur",
+        "category_id": "cat_furniture",
+        "regulation_id": "reg_espr_furniture",
+        "market": "*",
+        "mandatory": 0,
+        "note": "ESPR furniture delegated act not yet adopted — opt-in only for forward-looking compliance preparation."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "rule_furn_gpsr_01",
+      "rule_code": "FURN_MATERIALS_DECLARATION",
+      "rule_version": 1,
+      "regulation_code": "GPSR",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "materials_json",
+      "condition_json": { "category_codes": ["FURNITURE"], "min": 1 },
+      "message_en": "Material composition of furniture must be declared to enable a GPSR conformity assessment (Art. 8) and to identify applicable REACH restrictions. Declare primary materials (wood species/engineered wood type, metal alloys, upholstery fabrics, foam, surface coatings, adhesives).",
+      "message_fi": "Huonekalun materiaalipohja on ilmoitettava GPSR-vaatimustenmukaisuuden arvioinnin (Art. 8) ja sovellettavien REACH-rajoitusten tunnistamisen mahdollistamiseksi. Ilmoita päämateriaalit (puulaji / insinööripuu-tyyppi, metalliseokset, verhoilumateriaalit, vaahto, pintakäsittelyt, liimat).",
+      "legal_reference": "GPSR Art. 8(9) — technical documentation for safety assessment must identify materials; REACH Art. 33 (SVHC in articles); (EU) 2023/988",
+      "confidence_level": 95,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_furn_gpsr_02",
+      "rule_code": "FURN_GPSR_SAFETY_INFO",
+      "rule_version": 1,
+      "regulation_code": "GPSR",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "safety_notes_json",
+      "condition_json": { "category_codes": ["FURNITURE"], "min": 1 },
+      "message_en": "Safety information is mandatory for furniture. Include as applicable: maximum load capacity, assembly warnings, tip-over risk and wall-anchoring instructions (particularly for tall storage furniture), age restrictions for children's furniture, and surface treatment warnings (VOC off-gassing).",
+      "message_fi": "Turvallisuustiedot ovat pakollisia huonekaluille. Sisällytä tapauksen mukaan: enimmäiskuormakapasiteetti, kokoonpano-ohjeet, kaatumisriski ja seinäankurointiohjeet (erityisesti korkeille säilytyshyönkaluille), ikärajoitukset lastenhyönekaluille sekä pintakäsittelyvaroitukset (VOC-päästöt).",
+      "legal_reference": "GPSR Art. 9(5) — safety information including risks and how to avoid them; Art. 11(1) — product safety information; GPSR Recital 30 — tip-over risk explicitly cited; EN 14749:2016 (storage furniture stability) as reference standard under GPSR Art. 7; (EU) 2023/988",
+      "confidence_level": 94,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_furn_reach_01",
+      "rule_code": "FURN_REACH_SUBSTANCES",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["FURNITURE"], "min": 1 },
+      "message_en": "Furniture must be assessed for REACH-restricted substances. Declare or confirm absence of: SVHC in surface coatings, adhesives, or upholstery fabrics (Art. 33, >0.1% w/w); halogenated flame retardants in foam (several on SVHC list); formaldehyde-releasing resins in wood-based panels (Annex XVII Entry 72).",
+      "message_fi": "Huonekalut on arvioitava REACH-rajoitettujen aineiden osalta. Ilmoita tai vahvista seuraavien aineiden puuttuminen: SVHC pintakäsittelyissä, liimoissa tai verhoilukankaissa (Art. 33, >0,1 % p/p); halogenoidut palonsuoja-aineet vaahtomuovissa (useita SVHC-listalla); formaldehydiä vapauttavat hartsit puupohjaisissa levyissä (liite XVII, kohta 72).",
+      "legal_reference": "REACH Art. 33 (SVHC in articles); Annex XVII Entry 72 (formaldehyde in wood-based products); ECHA SVHC Candidate List — relevant entries include HBCDD (flame retardant in EPS), DecaBDE, chlorinated paraffins; (EC) No 1907/2006",
+      "confidence_level": 93,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_furn_reach_02",
+      "rule_code": "FURN_REACH_FORMALDEHYDE_DOC",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_document",
+      "severity": "error",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["FURNITURE"],
+        "doc_name_pattern": "formaldehyde|HCHO|E1.*class|EN.*717|EN.*120|emission.*test|panel.*test|wood.*emission|CARB|composite.*wood"
+      },
+      "message_en": "Furniture containing wood-based panels (MDF, particleboard, plywood, OSB) must demonstrate formaldehyde emission compliance (E1 class: ≤0.124 mg/m³ by EN 717-1 or ≤8 mg/100g dry board by EN 120). Upload a test report from an accredited laboratory or a valid manufacturer's declaration citing the test standard.",
+      "message_fi": "Puupohjaisia levyjä (MDF, lastulevy, vaneri, OSB) sisältävien huonekalujen on osoitettava formaldehydipäästöjen vaatimustenmukaisuus (E1-luokka: ≤0,124 mg/m³ standardin EN 717-1 mukaisesti tai ≤8 mg/100 g kuivaa levyä standardin EN 120 mukaisesti). Lataa akkreditoidun laboratorion testiraportti tai valmistajan pätevä vakuutus, jossa mainitaan testausstandardi.",
+      "legal_reference": "REACH Annex XVII Entry 72 (formaldehyde release from wood-based products — E1 class limit); EN 717-1:2004 (chamber method); EN 120:1992 (perforator method); Commission Regulation (EU) 2023/1464 (updated formaldehyde limits — verify entry into force date)",
+      "confidence_level": 91,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_furn_eudr_01",
+      "rule_code": "FURN_EUDR_TIMBER_DOC",
+      "rule_version": 1,
+      "regulation_code": "EUDR",
+      "rule_type": "required_document",
+      "severity": "warning",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["FURNITURE"],
+        "doc_name_pattern": "EUDR|deforestation|timber.*source|wood.*origin|due.*diligence|supply.*chain.*timber|FSC|PEFC|geo.*location|harvest.*area"
+      },
+      "message_en": "Furniture containing wood must comply with the EU Deforestation Regulation (EUDR) due diligence requirements. Operators must collect: geo-location of forest harvest area, country and region of production, evidence of legal harvest, and confirm the product has not contributed to deforestation after 31 December 2020. Upload due diligence statement or supply chain traceability documentation.",
+      "message_fi": "Puuta sisältävien huonekalujen on täytettävä EU:n metsäkatoasetuksen (EUDR) asianmukaisen huolellisuuden vaatimukset. Toimijoiden on kerättävä: metsän hakkuualueen maantieteellinen sijainti, tuotantomaa ja -alue, näyttö laillisesta hakkuusta sekä vahvistus siitä, ettei tuote ole edistänyt metsäkatoa 31. joulukuuta 2020 jälkeen. Lataa asianmukaisen huolellisuuden lausunto tai toimitusketjun jäljitettävyysdokumentaatio.",
+      "legal_reference": "Regulation (EU) 2023/1115 (EUDR), Art. 3 — products must be deforestation-free and legally harvested; Art. 4 — due diligence obligations on operators; Art. 9 — information to be collected; Annex I — wood products in scope",
+      "confidence_level": 85,
+      "requires_human_review": true,
+      "requirement_scope": "mandatory_EU",
+      "human_review_reason": "EUDR implementation was subject to a one-year delay proposal adopted by the Council and Parliament in late 2024 (final OJ publication pending as of knowledge cutoff). Application dates: large operators Dec 30 2025; SMEs Jun 30 2026. Additionally, EUDR applies only to wooden furniture — metal or fully plastic furniture is out of scope. The current schema has no wood_content field, so the rule cannot reliably distinguish wooden from non-wooden furniture. Enforce as warning until sub-category tagging is available and delay status is confirmed."
+    },
+    {
+      "id": "rule_furn_gpsr_03",
+      "rule_code": "FURN_FIRE_SAFETY_DOC",
+      "rule_version": 1,
+      "regulation_code": "GPSR",
+      "rule_type": "required_document",
+      "severity": "info",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["FURNITURE"],
+        "doc_name_pattern": "fire.*safe|flammab|BS.*5852|NF.*D60|FR.*standard|ignitab|combustion|cigarette.*test|match.*test|flame.*resist"
+      },
+      "message_en": "(Country-specific — informational) Fire safety requirements for upholstered furniture vary significantly by EU member state. UK (BS 5852:2006 — post-Brexit), France (NF D60-013), and Ireland have national fire safety requirements for domestic upholstered furniture. No EU-harmonised standard applies to all furniture types. Upload fire safety test documentation where required by the target market's national rules.",
+      "message_fi": "(Maakohtainen — tiedoksi) Pehmustettuja huonekaluja koskevat palovalvontavaatimukset vaihtelevat merkittävästi EU:n jäsenvaltioiden välillä. Isolla-Britannialla (BS 5852:2006 — Brexitin jälkeen), Ranskalla (NF D60-013) ja Irlannilla on kansalliset palovalvontavaatimukset kodinpehmustehyönekaluille. Kaikki huonekalutyypit kattavaa EU-yhdenmukaistettua standardia ei ole olemassa. Lataa palovalvontatestausdokumentaatio, jos kohdemarkkina sitä kansallisessa lainsäädännössään edellyttää.",
+      "legal_reference": "GPSR Art. 7 — national harmonised standards as conformity presumption; no EU-wide harmonised fire safety standard for domestic upholstered furniture as of 2026; national standards: UK BS 5852:2006 (no longer applicable for EU market post-Brexit); France arrêté du 15 mai 1980 + NF D60-013; Ireland S.I. No. 316/1995",
+      "confidence_level": 74,
+      "requires_human_review": true,
+      "requirement_scope": "country_specific",
+      "human_review_reason": "No EU-harmonised fire safety directive or standard for domestic upholstered furniture exists. Applicability depends entirely on (a) the target member state, (b) whether the product is domestic or contract/commercial furniture, and (c) specific furniture type. Do not assert any fire-safety requirement as mandatory_EU. Severity 'info' only."
+    },
+    {
+      "id": "rule_furn_espr_01",
+      "rule_code": "FURN_ESPR_MATERIALS",
+      "rule_version": 1,
+      "regulation_code": "ESPR_FURNITURE",
+      "rule_type": "required_array_min",
+      "severity": "info",
+      "field_path": "materials_json",
+      "condition_json": { "category_codes": ["FURNITURE"], "min": 1 },
+      "message_en": "(Draft — not yet in force) ESPR furniture delegated act is expected to require material composition disclosure including: recycled content percentage, material mass by type, and recyclability at end of life. Begin declaring these material properties in material declarations to prepare.",
+      "message_fi": "(Luonnos — ei vielä voimassa) ESPR:n huonekaludelegoidun asetuksen odotetaan edellyttävän materiaalipohjan ilmoittamista, mukaan lukien: kierrätetyn sisällön prosenttiosuus, materiaalin massa tyypeittäin ja kierrätettävyys elinkaaren lopussa. Aloita näiden ominaisuuksien ilmoittaminen materiaalitiedoissa valmistautuaksesi.",
+      "legal_reference": "ESPR Regulation (EU) 2024/1781, Art. 4 — ecodesign requirements; ESPR Working Plan 2022–2024 — furniture included; Joint Research Centre Preparatory Study on Ecodesign/Labelling for Furniture (JRC Technical Reports, 2021)",
+      "confidence_level": 68,
+      "requires_human_review": true,
+      "requirement_scope": "draft",
+      "human_review_reason": "The ESPR furniture delegated act has not been adopted as of the knowledge cutoff. The precise requirements (recycled content thresholds, material disclosure format, recyclability metrics) are still being studied by the JRC. Do not enforce as error or warning. Surface as 'info' for forward-looking preparation only."
+    },
+    {
+      "id": "rule_furn_espr_02",
+      "rule_code": "FURN_ESPR_REPAIR_INFO",
+      "rule_version": 1,
+      "regulation_code": "ESPR_FURNITURE",
+      "rule_type": "required_array_min",
+      "severity": "info",
+      "field_path": "repair_instructions_json",
+      "condition_json": { "category_codes": ["FURNITURE"], "min": 1 },
+      "message_en": "(Draft — not yet in force) ESPR for furniture is expected to include requirements for repair and maintenance information: spare part availability, disassembly instructions, and durability claims. Begin documenting these to prepare for future mandatory compliance.",
+      "message_fi": "(Luonnos — ei vielä voimassa) ESPR:n huonekaludelegoidun asetuksen odotetaan sisältävän vaatimuksia korjaus- ja huoltotiedoista: varaosien saatavuus, purkuohjeet ja kestoikäväitteet. Aloita näiden dokumentointi tulevan pakollisen vaatimustenmukaisuuden valmistelua varten.",
+      "legal_reference": "ESPR Regulation (EU) 2024/1781, Art. 5(1)(e) — repairability as ecodesign parameter; ESPR Working Plan 2022–2024 — furniture; JRC preparatory study 2021",
+      "confidence_level": 67,
+      "requires_human_review": true,
+      "requirement_scope": "draft",
+      "human_review_reason": "Repairability requirements for furniture under ESPR are under study and not yet formally proposed. Confidence below 70%. Severity 'info' only."
+    }
+  ]
+}

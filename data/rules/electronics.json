@@ -1,0 +1,213 @@
+{
+  "_meta": {
+    "category": "ELECTRONICS",
+    "generated": "2026-06-16",
+    "schema_version": "0004",
+    "notes": [
+      "ELECTRONICS category (cat_electronics) and category_regulations for GPSR (mandatory=1) and EPR (mandatory=1) already exist.",
+      "GPSR_CE_MARKING_INFO already exists as severity='info' for ELECTRONICS — intentionally info-only because CE applicability depends on which harmonisation directive(s) apply to the specific product.",
+      "EPR_REPAIR_INSTRUCTIONS already covers repair_instructions_json for ELECTRONICS (category_codes: [ELECTRONICS, BATTERIES], warning).",
+      "The EU Declaration of Conformity (EU DoC) is required independently by each applicable New Legislative Framework directive: LVD (2014/35/EU), EMC (2014/30/EU), RED (2014/53/EU), and also by RoHS (2011/65/EU Art. 13-15). ELEC_ROHS_EU_DOC and ELEC_CE_EU_DOC are distinct legal obligations under different directives — both are included.",
+      "WEEE producer registration (certificate from national WEEE register) is an obligation on the economic operator, not a product-level data point. It is excluded from product passport rules — confidence too low that it can be meaningfully evaluated per-product.",
+      "RoHS Annex II restricted substances: lead (Pb), mercury (Hg), cadmium (Cd), hexavalent chromium (Cr6+), polybrominated biphenyls (PBB), polybrominated diphenyl ethers (PBDE), di(2-ethylhexyl) phthalate (DEHP), benzyl butyl phthalate (BBP), dibutyl phthalate (DBP), diisobutyl phthalate (DIBP). Phthalates added by Directive 2015/863/EU.",
+      "Radio Equipment Directive (RED) 2014/53/EU and Low Voltage Directive (LVD) 2014/35/EU require EU DoC and CE marking but apply only to products in their scope. No product-type tagging exists in the current schema, so these are captured as document requirements under the electronics category."
+    ],
+    "new_regulations_required": [
+      {
+        "id": "reg_rohs",
+        "code": "ROHS",
+        "name": "Restriction of Hazardous Substances in Electrical and Electronic Equipment",
+        "description": "Directive 2011/65/EU (recast). Restricts use of lead, mercury, cadmium, hexavalent chromium, PBB, PBDE, and four phthalates in EEE. Requires EU Declaration of Conformity.",
+        "version": "2011/65/EU",
+        "effective_date": "2011-07-21",
+        "status": "active"
+      },
+      {
+        "id": "reg_weee",
+        "code": "WEEE",
+        "name": "Waste Electrical and Electronic Equipment Directive",
+        "description": "Directive 2012/19/EU. Requires separate collection labelling, end-of-life information for users, and producer registration with national take-back schemes.",
+        "version": "2012/19/EU",
+        "effective_date": "2014-02-14",
+        "status": "active"
+      },
+      {
+        "id": "reg_reach",
+        "code": "REACH",
+        "name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
+        "description": "Regulation (EC) No 1907/2006. Art. 33 requires communication of SVHC in articles >0.1% w/w to consumers on request and to downstream users proactively.",
+        "version": "1907/2006",
+        "effective_date": "2007-06-01",
+        "status": "active"
+      },
+      {
+        "id": "reg_espr_electronics",
+        "code": "ESPR_ELECTRONICS",
+        "name": "Ecodesign for Sustainable Products — Electronics (Working Plan)",
+        "description": "Delegated acts under ESPR (EU) 2024/1781 for electronics product groups. Repairability, spare parts availability, and energy efficiency requirements are under development as of 2025. Specific delegated acts not yet adopted.",
+        "version": "2024/draft",
+        "effective_date": null,
+        "status": "draft"
+      }
+    ],
+    "category_regulations_required": [
+      {
+        "id": "cr_rohs_ele",
+        "category_id": "cat_electronics",
+        "regulation_id": "reg_rohs",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "RoHS applies to virtually all EEE sold on the EU market. Exemptions (Annex III/IV) are product-specific and cannot be pre-evaluated without product sub-type tagging."
+      },
+      {
+        "id": "cr_weee_ele",
+        "category_id": "cat_electronics",
+        "regulation_id": "reg_weee",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "WEEE applies to all EEE in its scope (Annex I categories). Separate collection labelling and user information are mandatory."
+      },
+      {
+        "id": "cr_reach_ele",
+        "category_id": "cat_electronics",
+        "regulation_id": "reg_reach",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "REACH SVHC obligations apply to all articles including electronics."
+      },
+      {
+        "id": "cr_espr_ele",
+        "category_id": "cat_electronics",
+        "regulation_id": "reg_espr_electronics",
+        "market": "*",
+        "mandatory": 0,
+        "note": "ESPR electronics delegated acts are not yet in force — opt-in only for forward-looking compliance preparation."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "rule_elec_rohs_01",
+      "rule_code": "ELEC_ROHS_SUBSTANCES",
+      "rule_version": 1,
+      "regulation_code": "ROHS",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["ELECTRONICS"], "min": 1 },
+      "message_en": "RoHS-restricted substance declarations are required for EEE. Declare compliance with or exemption from restrictions on: Pb, Hg, Cd, Cr6+, PBB, PBDE, DEHP, BBP, DBP, DIBP (Directive 2011/65/EU Annex II). Maximum concentration values apply unless an Annex III/IV exemption is claimed.",
+      "message_fi": "RoHS-rajoitettujen aineiden ilmoitukset vaaditaan EEE-tuotteille. Ilmoita vaatimustenmukaisuus tai poikkeus seuraavien rajoitusten osalta: Pb, Hg, Cd, Cr6+, PBB, PBDE, DEHP, BBP, DBP, DIBP (direktiivi 2011/65/EU, liite II). Enimmäispitoisuusarvot pätevät, ellei liitteen III/IV vapautusta vaadita.",
+      "legal_reference": "Directive 2011/65/EU (RoHS recast), Art. 4(1) — restriction on hazardous substances; Annex II — restricted substances and maximum concentration values; Directive 2015/863/EU (phthalates amendment)",
+      "confidence_level": 98,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_elec_rohs_02",
+      "rule_code": "ELEC_ROHS_EU_DOC",
+      "rule_version": 1,
+      "regulation_code": "ROHS",
+      "rule_type": "required_document",
+      "severity": "error",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["ELECTRONICS"],
+        "doc_name_pattern": "RoHS|hazardous.*substance|restricted.*substance|DoC.*RoHS|EU.*declaration|conformity.*2011"
+      },
+      "message_en": "An EU Declaration of Conformity confirming RoHS compliance (Directive 2011/65/EU Art. 13-15) is mandatory for EEE placed on the EU market. The DoC must identify the product, manufacturer, applicable legislation, and be signed by an authorised representative.",
+      "message_fi": "EU-vaatimustenmukaisuusvakuutus, joka vahvistaa RoHS-vaatimustenmukaisuuden (direktiivi 2011/65/EU, Art. 13–15), on pakollinen EU:n markkinoille saatettaville EEE-tuotteille. Vakuutuksessa on mainittava tuote, valmistaja, sovellettava lainsäädäntö, ja valtuutetun edustajan on allekirjoitettava se.",
+      "legal_reference": "Directive 2011/65/EU (RoHS), Art. 13 (EU declaration of conformity); Art. 14 (CE marking); Art. 15 (content of EU DoC); Annex VI — template for EU DoC",
+      "confidence_level": 98,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_elec_gpsr_01",
+      "rule_code": "ELEC_CE_EU_DOC",
+      "rule_version": 1,
+      "regulation_code": "ROHS",
+      "rule_type": "required_document",
+      "severity": "error",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["ELECTRONICS"],
+        "doc_name_pattern": "CE.*mark|declaration.*conformity|EU.*DoC|EU.*declaration|conformity.*declar|LVD.*declar|RED.*declar|EMC.*declar|NLF.*declar"
+      },
+      "message_en": "CE marking and an EU Declaration of Conformity are required for EEE subject to New Legislative Framework directives (LVD 2014/35/EU, EMC 2014/30/EU, RED 2014/53/EU, as applicable). Upload the EU DoC identifying all applicable directives, standards applied, and the signatory.",
+      "message_fi": "CE-merkintä ja EU-vaatimustenmukaisuusvakuutus vaaditaan EEE-tuotteille, joihin sovelletaan uuden lainsäädäntökehyksen direktiivejä (LVD 2014/35/EU, EMC 2014/30/EU, RED 2014/53/EU, tapauksen mukaan). Lataa EU-vakuutus, jossa yksilöidään kaikki sovellettavat direktiivit, sovelletut standardit ja allekirjoittaja.",
+      "legal_reference": "Decision No 768/2008/EC (NLF CE marking framework); Directive 2014/35/EU (LVD), Art. 13-15; Directive 2014/30/EU (EMC), Art. 14-16; Directive 2014/53/EU (RED), Art. 19-21; (EU) 2023/988 (GPSR) does not itself require CE marking but operates alongside applicable harmonisation legislation",
+      "confidence_level": 97,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_elec_weee_01",
+      "rule_code": "ELEC_WEEE_RECYCLING",
+      "rule_version": 1,
+      "regulation_code": "WEEE",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "recycling_instructions_json",
+      "condition_json": { "category_codes": ["ELECTRONICS"], "min": 1 },
+      "message_en": "End-of-life recycling information is mandatory for EEE under WEEE Directive. Users must be informed that the product must NOT be disposed of as unsorted municipal waste and should be returned to a designated collection point (crossed-out wheeled bin symbol). Include instructions on where and how to return the product.",
+      "message_fi": "Elinkaaren lopun kierrätysohjeet ovat pakollisia EEE-tuotteille WEEE-direktiivin nojalla. Käyttäjiä on informoitava, ettei tuotetta saa hävittää lajittelemattoman yhdyskuntajätteen mukana, vaan se on palautettava asianmukaiseen keräyspisteeseen (yliviivattu roskakori -symboli). Sisällytä ohjeet siitä, minne ja miten tuote palautetaan.",
+      "legal_reference": "Directive 2012/19/EU (WEEE), Art. 12(1) — information for users of private households; Art. 14(1) — marking requirements (crossed-out wheeled bin); Annex VIII — information for users",
+      "confidence_level": 97,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_elec_reach_01",
+      "rule_code": "ELEC_REACH_SVHC",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["ELECTRONICS"], "min": 1 },
+      "message_en": "Any substance of very high concern (SVHC) present in the product above 0.1% w/w must be communicated to customers and — upon request — to consumers and waste authorities (REACH Art. 33). Declare all SVHC candidates or confirm their absence.",
+      "message_fi": "Kaikki tuotteessa yli 0,1 % (p/p) pitoisuudella esiintyvät erittäin suurta huolta aiheuttavat aineet (SVHC) on ilmoitettava asiakkaille ja — pyydettäessä — kuluttajille ja jäteviranomaisille (REACH Art. 33). Ilmoita kaikki SVHC-ehdokkaat tai vahvista niiden puuttuminen.",
+      "legal_reference": "REACH Art. 33 — duty to communicate information on substances in articles; ECHA SVHC Candidate List (updated regularly); (EC) No 1907/2006",
+      "confidence_level": 96,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_elec_weee_02",
+      "rule_code": "ELEC_WEEE_SYMBOL_DOC",
+      "rule_version": 1,
+      "regulation_code": "WEEE",
+      "rule_type": "required_document",
+      "severity": "info",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["ELECTRONICS"],
+        "doc_name_pattern": "WEEE|crossed.*bin|wheeled.*bin|producer.*register|take.*back|separate.*collection"
+      },
+      "message_en": "(Informational) Evidence of WEEE producer registration with a national take-back scheme (e.g. Piretti, Sims, national register certificate) can be uploaded here for audit traceability. The registration itself is a business-level obligation, not a per-product passport requirement.",
+      "message_fi": "(Tiedoksi) Todistus WEEE-tuottajarekisteröinnistä kansallisessa palautusjärjestelmässä (esim. Piretti, kansallinen rekisteriote) voidaan ladata tähän tarkastettavuuden tueksi. Rekisteröinti on yritystason velvoite eikä tuotekohtainen tuotepassivaatimus.",
+      "legal_reference": "Directive 2012/19/EU (WEEE), Art. 16 — registration of producers with national registers; Art. 17 — reporting; national implementing legislation varies by member state",
+      "confidence_level": 84,
+      "requires_human_review": true,
+      "requirement_scope": "best_practice",
+      "human_review_reason": "WEEE producer registration is a business-level obligation managed at company level, not product level. Including it as a product-passport document rule may confuse product operators and does not map cleanly to the product_documents table. Severity set to 'info' to surface it without blocking compliance score."
+    },
+    {
+      "id": "rule_elec_espr_01",
+      "rule_code": "ELEC_ESPR_REPAIR_INFO",
+      "rule_version": 1,
+      "regulation_code": "ESPR_ELECTRONICS",
+      "rule_type": "required_array_min",
+      "severity": "info",
+      "field_path": "repair_instructions_json",
+      "condition_json": { "category_codes": ["ELECTRONICS"], "min": 1 },
+      "message_en": "(Draft — not yet in force) ESPR delegated acts for electronics product groups are expected to include repairability requirements: spare parts availability periods, disassembly instructions, and a repairability score. Begin documenting repair/disassembly instructions now to prepare.",
+      "message_fi": "(Luonnos — ei vielä voimassa) Elektroniikan ESPR-delegoitujen asetusten odotetaan sisältävän korjattavuusvaatimuksia: varaosien saatavuusajat, purkuohjeet ja korjattavuusindeksi. Aloita korjaus- ja purkuohjeiden dokumentointi nyt valmistautuaksesi.",
+      "legal_reference": "ESPR Regulation (EU) 2024/1781, Art. 5 — ecodesign requirements; ESPR Working Plan 2022–2024 — smartphones and tablets (COM/2022/31); Regulation (EU) 2023/1670 (smartphones ecodesign — repair information, spare parts); note: 2023/1670 is already in force for smartphones as of 2025",
+      "confidence_level": 78,
+      "requires_human_review": true,
+      "requirement_scope": "draft",
+      "human_review_reason": "Regulation (EU) 2023/1670 is already in force for smartphones (from June 2025) and mandates repairability. For other electronics subcategories, ESPR delegated acts are pending. The rule cannot be uniformly applied across all ELECTRONICS without product sub-category tagging. Do not enforce as error or warning at the ELECTRONICS category level."
+    }
+  ]
+}

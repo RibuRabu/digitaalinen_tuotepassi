@@ -1,0 +1,138 @@
+{
+  "_meta": {
+    "category": "JEWELRY",
+    "generated": "2026-06-16",
+    "schema_version": "0004",
+    "notes": [
+      "JEWELRY is a new category — cat_jewelry must be inserted before applying these rules.",
+      "Global GPSR rules (GPSR_PRODUCT_NAME, GPSR_MANUFACTURER_NAME, GPSR_MANUFACTURER_ADDRESS, GPSR_MANUFACTURER_CONTACT, GPSR_SAFETY_NOTES) fire for all categories via category_regulations. They are NOT duplicated here.",
+      "Precious metal hallmarking (gold purity, silver purity) is regulated nationally under domestic implementing legislation derived from the Hallmarking Directive 75/768/EEC; it is NOT EU-harmonised and is excluded from this file.",
+      "REACH Annex XVII Entry 63 (lead in jewelry) is excluded: the restriction applies narrowly to articles accessible to children's mouths (toy-like jewelry for under-14s), making the scope ambiguous for general fashion jewelry without sub-category tagging. Confidence <70%. Do not assert."
+    ],
+    "new_category_required": {
+      "id": "cat_jewelry",
+      "code": "JEWELRY",
+      "name_fi": "Korut ja asusteet",
+      "name_en": "Jewelry and accessories"
+    },
+    "new_regulations_required": [
+      {
+        "id": "reg_reach",
+        "code": "REACH",
+        "name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
+        "description": "Regulation (EC) No 1907/2006. Governs chemical substance restrictions including nickel and cadmium in articles intended for skin contact.",
+        "version": "1907/2006",
+        "effective_date": "2007-06-01",
+        "status": "active"
+      }
+    ],
+    "category_regulations_required": [
+      {
+        "id": "cr_gpsr_jew",
+        "category_id": "cat_jewelry",
+        "regulation_id": "reg_gpsr",
+        "market": "*",
+        "mandatory": 1,
+        "note": "GPSR applies to all consumer products placed on the EU market — mandatory for jewelry."
+      },
+      {
+        "id": "cr_reach_jew",
+        "category_id": "cat_jewelry",
+        "regulation_id": "reg_reach",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "REACH Annex XVII Entry 27 (nickel) and Entry 23 (cadmium) are mandatory chemical restrictions for jewelry placed in contact with skin."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "rule_jewel_reach_01",
+      "rule_code": "JEWEL_REACH_SUBSTANCES",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["JEWELRY"], "min": 1 },
+      "message_en": "Chemical substance declarations are required for jewelry. At minimum, declare nickel content or confirmed absence; cadmium and any SVHC present above 0.1% w/w must also be disclosed.",
+      "message_fi": "Kemikaaleja koskevat aineilmoitukset vaaditaan koruille. Ilmoita vähintään nikkelipitoisuus tai sen vahvistettu puuttuminen; myös kadmium ja yli 0,1 % (p/p) pitoisuudella esiintyvät SVHC-aineet on ilmoitettava.",
+      "legal_reference": "REACH Annex XVII Entry 27 (Nickel — skin-contact articles); Entry 23 (Cadmium); Art. 33 (SVHC communication to consumers); (EC) No 1907/2006",
+      "confidence_level": 95,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_jewel_reach_02",
+      "rule_code": "JEWEL_REACH_NICKEL_DOC",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_document",
+      "severity": "warning",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["JEWELRY"],
+        "doc_name_pattern": "nickel|EN.?1811|migration.*test|skin.*contact.*test|substance.*migration"
+      },
+      "message_en": "A nickel release test report per EN 1811:2023 is required to demonstrate compliance with REACH Annex XVII Entry 27 for jewelry in prolonged skin contact. Upload the test report from an accredited laboratory.",
+      "message_fi": "Standardin EN 1811:2023 mukainen nikkelipäästötestiraportti vaaditaan osoittamaan vaatimustenmukaisuus REACH-asetuksen liitteen XVII kohdan 27 kanssa ihokosketuksessa oleville koruille. Lataa akkreditoidun laboratorion testiraportti.",
+      "legal_reference": "REACH Annex XVII Entry 27, para. 1 and 2; EN 1811:2023 (harmonised test method for nickel migration); (EC) No 1907/2006",
+      "confidence_level": 93,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_jewel_reach_03",
+      "rule_code": "JEWEL_REACH_CADMIUM_DOC",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_document",
+      "severity": "warning",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["JEWELRY"],
+        "doc_name_pattern": "cadmium|Cd.*content|REACH.*23|supplier.*declar|chemical.*analysis|XRF.*test|metal.*content"
+      },
+      "message_en": "Documentation confirming cadmium content below 0.01% w/w in metal parts of jewelry is required by REACH Annex XVII Entry 23. Acceptable evidence: supplier declaration, XRF screening result, or laboratory analysis.",
+      "message_fi": "REACH-asetuksen liitteen XVII kohta 23 edellyttää asiakirjaa, joka vahvistaa kadmiumpitoisuuden olevan alle 0,01 % (p/p) korujen metalliosissa. Hyväksyttävä näyttö: toimittajan vakuutus, XRF-seulontatulos tai laboratorioanalyysi.",
+      "legal_reference": "REACH Annex XVII Entry 23 (Cadmium and its compounds), para. 3 — jewelry and fashion accessories; (EC) No 1907/2006",
+      "confidence_level": 88,
+      "requires_human_review": true,
+      "requirement_scope": "mandatory_EU",
+      "human_review_reason": "Annex XVII Entry 23 para. 3 restricts cadmium in jewelry alloys, but the threshold applicability depends on the specific metal composition and product type. Sub-category verification recommended before asserting this as a blocking error."
+    },
+    {
+      "id": "rule_jewel_gpsr_01",
+      "rule_code": "JEWEL_GPSR_ALLERGEN_WARNING",
+      "rule_version": 1,
+      "regulation_code": "GPSR",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "safety_notes_json",
+      "condition_json": { "category_codes": ["JEWELRY"], "min": 1 },
+      "message_en": "Jewelry must include safety information about potential allergens in contact materials (e.g. nickel, chromium VI, certain dyes used in artificial stones or leather). Disclose known sensitisers to enable informed consumer choice.",
+      "message_fi": "Korujen on sisällettävä turvallisuustietoja kosketusmateriaalien mahdollisista allergeeneista (esim. nikkeli, kromi VI, keinokivissä tai nahassa käytetyt väriaineet). Ilmoita tunnetut herkistäjät, jotta kuluttajat voivat tehdä tietoisen valinnan.",
+      "legal_reference": "GPSR Art. 9(5) — safety information on risks and means to avoid them; Art. 11(1)(c) — product safety information for vulnerable consumers; (EU) 2023/988",
+      "confidence_level": 91,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_jewel_reach_04",
+      "rule_code": "JEWEL_MATERIALS_DECLARATION",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "materials_json",
+      "condition_json": { "category_codes": ["JEWELRY"], "min": 1 },
+      "message_en": "Declaring the material composition of jewelry (metal alloys, gemstones, plating, coatings) supports REACH substance traceability and allows downstream actors to verify SVHC obligations under Art. 33.",
+      "message_fi": "Korujen materiaalipohjan ilmoittaminen (metallilejeeringit, jalokivet, galvanoinnit, pinnoitteet) tukee REACH-aineiden jäljitettävyyttä ja mahdollistaa toimitusketjun toimijoiden SVHC-velvoitteiden (Art. 33) tarkistamisen.",
+      "legal_reference": "REACH Art. 33 (communication on SVHC in articles); GPSR Art. 8(9) — technical documentation for safety assessment; (EC) No 1907/2006",
+      "confidence_level": 86,
+      "requires_human_review": true,
+      "requirement_scope": "best_practice",
+      "human_review_reason": "Material composition declaration is best practice and supports REACH Art. 33 compliance, but it is not independently mandated as a standalone obligation for all jewelry by name. Asserting it as 'error' severity would overstate the legal duty."
+    }
+  ]
+}

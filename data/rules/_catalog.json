@@ -1,0 +1,164 @@
+{
+  "_meta": {
+    "purpose": "Master catalog of all data/rules/*.json files. Use this to determine what DB changes are required before seeding the new rules.",
+    "generated": "2026-06-16",
+    "schema_extension_required": {
+      "migration": "0006_rules_metadata.sql (to be created)",
+      "reason": "The regulation_rules table does not currently have legal_reference, confidence_level, or requires_human_review columns. These are present in the JSON files but cannot be persisted to D1 until the migration is applied.",
+      "columns_to_add": [
+        { "table": "regulation_rules", "column": "legal_reference", "type": "TEXT", "default": null },
+        { "table": "regulation_rules", "column": "confidence_level", "type": "INTEGER", "default": null, "range": "0–100" },
+        { "table": "regulation_rules", "column": "requires_human_review", "type": "INTEGER", "default": 0, "values": "0 or 1" },
+        { "table": "regulation_rules", "column": "requirement_scope", "type": "TEXT", "default": null, "values": "mandatory_EU | country_specific | draft | best_practice" }
+      ]
+    }
+  },
+  "new_categories": [
+    {
+      "id": "cat_jewelry",
+      "code": "JEWELRY",
+      "name_fi": "Korut ja asusteet",
+      "name_en": "Jewelry and accessories",
+      "defined_in": "jewelry.json"
+    }
+  ],
+  "new_regulations": [
+    {
+      "id": "reg_reach",
+      "code": "REACH",
+      "status": "active",
+      "referenced_by": ["jewelry.json", "textiles.json", "electronics.json", "batteries.json", "furniture.json"]
+    },
+    {
+      "id": "reg_textile_labeling",
+      "code": "TEXTILE_LABELING",
+      "status": "active",
+      "referenced_by": ["textiles.json"]
+    },
+    {
+      "id": "reg_rohs",
+      "code": "ROHS",
+      "status": "active",
+      "referenced_by": ["electronics.json"]
+    },
+    {
+      "id": "reg_weee",
+      "code": "WEEE",
+      "status": "active",
+      "referenced_by": ["electronics.json", "batteries.json"]
+    },
+    {
+      "id": "reg_battery_reg",
+      "code": "BATTERY_REG",
+      "status": "active",
+      "referenced_by": ["batteries.json"]
+    },
+    {
+      "id": "reg_espr_electronics",
+      "code": "ESPR_ELECTRONICS",
+      "status": "draft",
+      "referenced_by": ["electronics.json"]
+    },
+    {
+      "id": "reg_espr_furniture",
+      "code": "ESPR_FURNITURE",
+      "status": "draft",
+      "referenced_by": ["furniture.json"]
+    },
+    {
+      "id": "reg_eudr",
+      "code": "EUDR",
+      "status": "active",
+      "referenced_by": ["furniture.json"]
+    }
+  ],
+  "rule_summary": {
+    "jewelry": {
+      "total": 5,
+      "by_severity": { "error": 1, "warning": 4, "info": 0 },
+      "requires_human_review": 2,
+      "mandatory_EU": 4,
+      "country_specific": 0,
+      "draft": 0,
+      "best_practice": 1
+    },
+    "textiles": {
+      "total": 5,
+      "by_severity": { "error": 1, "warning": 3, "info": 1 },
+      "requires_human_review": 2,
+      "mandatory_EU": 3,
+      "country_specific": 1,
+      "draft": 1,
+      "best_practice": 0
+    },
+    "electronics": {
+      "total": 7,
+      "by_severity": { "error": 4, "warning": 1, "info": 2 },
+      "requires_human_review": 2,
+      "mandatory_EU": 5,
+      "country_specific": 0,
+      "draft": 1,
+      "best_practice": 1
+    },
+    "batteries": {
+      "total": 7,
+      "by_severity": { "error": 5, "warning": 1, "info": 1 },
+      "requires_human_review": 1,
+      "mandatory_EU": 7,
+      "country_specific": 0,
+      "draft": 0,
+      "best_practice": 0
+    },
+    "furniture": {
+      "total": 8,
+      "by_severity": { "error": 3, "warning": 2, "info": 3 },
+      "requires_human_review": 5,
+      "mandatory_EU": 5,
+      "country_specific": 1,
+      "draft": 2,
+      "best_practice": 0
+    }
+  },
+  "confidence_distribution": {
+    "95_100_pct": ["JEWEL_REACH_SUBSTANCES", "TEXT_LABEL_FIBER_COMP", "ELEC_ROHS_SUBSTANCES", "ELEC_ROHS_EU_DOC", "ELEC_CE_EU_DOC", "ELEC_WEEE_RECYCLING", "ELEC_REACH_SVHC", "BAT_REG_CHEMISTRY", "BAT_REG_SUBSTANCES", "BAT_REG_SAFETY_WARNINGS", "BAT_REG_RECYCLING_INFO", "FURN_MATERIALS_DECLARATION"],
+    "90_94_pct": ["JEWEL_REACH_NICKEL_DOC", "JEWEL_GPSR_ALLERGEN_WARNING", "TEXT_REACH_SUBSTANCES", "TEXT_REACH_AZO_DOC", "BAT_REG_EU_DOC", "BAT_REACH_SVHC", "FURN_GPSR_SAFETY_INFO", "FURN_REACH_SUBSTANCES", "FURN_REACH_FORMALDEHYDE_DOC"],
+    "flagged_below_90": ["TEXT_LABEL_CARE", "TEXT_ESPR_RECYCLED_CONTENT", "JEWEL_REACH_CADMIUM_DOC", "JEWEL_MATERIALS_DECLARATION", "ELEC_WEEE_SYMBOL_DOC", "ELEC_ESPR_REPAIR_INFO", "BAT_REG_CARBON_FOOTPRINT", "FURN_EUDR_TIMBER_DOC", "FURN_FIRE_SAFETY_DOC", "FURN_ESPR_MATERIALS", "FURN_ESPR_REPAIR_INFO"]
+  },
+  "excluded_requirements": [
+    {
+      "topic": "Precious metal hallmarking (gold, silver, platinum purity)",
+      "reason": "Regulated nationally under domestic implementations of Hallmarking Directive 75/768/EEC. Not EU-harmonised. Cannot assert a uniform EU-wide rule.",
+      "category": "JEWELRY"
+    },
+    {
+      "topic": "Lead in jewelry (REACH Annex XVII Entry 63)",
+      "reason": "Restriction applies narrowly to articles accessible to children's mouths (toy-like jewelry for under-14s). Scope is ambiguous for general fashion jewelry without sub-category tagging. Confidence <70%.",
+      "category": "JEWELRY"
+    },
+    {
+      "topic": "WEEE producer registration certificate",
+      "reason": "Business-level obligation (company registered with national WEEE scheme), not a per-product data point. Cannot be meaningfully evaluated per product.",
+      "category": "ELECTRONICS"
+    },
+    {
+      "topic": "Radio Equipment Directive (RED 2014/53/EU) — wireless-specific",
+      "reason": "Applies only to radio equipment. No product sub-type tagging exists in the schema to distinguish wireless from non-wireless electronics.",
+      "category": "ELECTRONICS"
+    },
+    {
+      "topic": "UN 38.3 transport testing (lithium batteries)",
+      "reason": "Transport safety classification, not a product information/DPP requirement. Managed at logistics level, not product level.",
+      "category": "BATTERIES"
+    },
+    {
+      "topic": "Furniture EPR (France REP ameublement, etc.)",
+      "reason": "No EU-wide harmonised furniture EPR regulation exists. Country-specific MS schemes exist but cannot be asserted as EU-wide mandatory.",
+      "category": "FURNITURE"
+    },
+    {
+      "topic": "EU-harmonised fire safety for domestic furniture",
+      "reason": "No EU-wide harmonised flammability standard or directive covers all domestic furniture. National requirements only. Cannot assert as EU-wide mandatory error.",
+      "category": "FURNITURE"
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "_meta": {
+    "category": "BATTERIES",
+    "generated": "2026-06-16",
+    "schema_version": "0004",
+    "notes": [
+      "BATTERIES category (cat_batteries) and category_regulations for GPSR (mandatory=1) and EPR (mandatory=1) already exist.",
+      "EPR_REPAIR_INSTRUCTIONS already covers repair_instructions_json for BATTERIES (category_codes: [ELECTRONICS, BATTERIES], warning).",
+      "The EU Battery Regulation (EU) 2023/1542 is the primary instrument — it replaces Directive 2006/66/EC (Battery Directive). Full replacement as of August 18 2025.",
+      "Battery categories under 2023/1542: portable (<5kg), LMT (Light Means of Transport), SLI (Starting, Lighting, Ignition), industrial (≥5kg), electric vehicle (EV). Rules here are scoped to the BATTERIES product category broadly; product-sub-type tagging does not yet exist in the schema.",
+      "Phasing of key Battery Regulation requirements (approximate dates; refer to official text for precise application dates):",
+      "  - Labelling (Art. 13): Aug 2024 (general) — capacity, chemistry, hazard symbols, QR code",
+      "  - Safety warnings (Art. 11): Aug 2024",
+      "  - Carbon footprint declaration (Art. 38): EV batteries Aug 2025; LMT batteries Aug 2025; industrial ≥2kWh Aug 2025",
+      "  - Battery passport (Art. 14): EV batteries Feb 2027; industrial ≥2kWh Aug 2030; LMT batteries Aug 2026",
+      "  - Recycled content minimum (Art. 8): Co 16%, Pb 85%, Li 6%, Ni 6% — from 2031 (first threshold)",
+      "Carbon footprint and battery passport obligations are phased and battery-category-specific. Rules for these are marked requires_human_review and severity='info'.",
+      "WEEE Directive (2012/19/EU) also applies to waste batteries placed on the market; 2023/1542 EPR provisions (Art. 67–70) supersede the battery-specific parts of the Battery Directive but WEEE still applies for collection infrastructure.",
+      "UN 38.3 transport testing (lithium batteries) is a transport safety requirement, not a product information/DPP requirement — excluded."
+    ],
+    "new_regulations_required": [
+      {
+        "id": "reg_battery_reg",
+        "code": "BATTERY_REG",
+        "name": "EU Battery Regulation",
+        "description": "Regulation (EU) 2023/1542. Comprehensive lifecycle requirements for batteries: labelling, safety, EPR, carbon footprint, battery passport. Replaces Directive 2006/66/EC from 18 August 2025.",
+        "version": "2023/1542",
+        "effective_date": "2023-08-17",
+        "status": "active"
+      },
+      {
+        "id": "reg_reach",
+        "code": "REACH",
+        "name": "Registration, Evaluation, Authorisation and Restriction of Chemicals",
+        "description": "Regulation (EC) No 1907/2006. SVHC obligations apply to battery articles; cobalt and lithium are subject to authorisation/restriction scrutiny.",
+        "version": "1907/2006",
+        "effective_date": "2007-06-01",
+        "status": "active"
+      },
+      {
+        "id": "reg_weee",
+        "code": "WEEE",
+        "name": "Waste Electrical and Electronic Equipment Directive",
+        "description": "Directive 2012/19/EU. Applies to batteries embedded in or supplied with EEE. Collection and separate disposal obligations.",
+        "version": "2012/19/EU",
+        "effective_date": "2014-02-14",
+        "status": "active"
+      }
+    ],
+    "category_regulations_required": [
+      {
+        "id": "cr_battery_bat",
+        "category_id": "cat_batteries",
+        "regulation_id": "reg_battery_reg",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "Battery Regulation (EU) 2023/1542 is mandatory for all batteries placed on the EU market. Replaces the Battery Directive from August 2025."
+      },
+      {
+        "id": "cr_reach_bat",
+        "category_id": "cat_batteries",
+        "regulation_id": "reg_reach",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "REACH SVHC obligations apply to battery articles. Cobalt, lithium compounds, and nickel sulfate are on or near the SVHC Candidate List."
+      },
+      {
+        "id": "cr_weee_bat",
+        "category_id": "cat_batteries",
+        "regulation_id": "reg_weee",
+        "market": "EU",
+        "mandatory": 1,
+        "note": "WEEE applies to batteries in or supplied with EEE. Collection infrastructure and labelling obligations."
+      }
+    ]
+  },
+  "rules": [
+    {
+      "id": "rule_bat_reg_01",
+      "rule_code": "BAT_REG_CHEMISTRY",
+      "rule_version": 1,
+      "regulation_code": "BATTERY_REG",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "materials_json",
+      "condition_json": { "category_codes": ["BATTERIES"], "min": 1 },
+      "message_en": "Battery chemistry must be declared (e.g. Li-ion, NiMH, LFP, lead-acid, alkaline). Required on the label and in accompanying information per Battery Regulation Art. 13(2)(b). This information must be accessible via QR code from August 2025.",
+      "message_fi": "Akkukemia on ilmoitettava (esim. Li-ion, NiMH, LFP, lyijyhappo, alkali). Vaaditaan etiketissä ja mukana toimitetuissa tiedoissa akkuasetuksen Art. 13(2)(b) mukaisesti. Nämä tiedot on oltava QR-koodin kautta saatavissa elokuusta 2025 alkaen.",
+      "legal_reference": "Regulation (EU) 2023/1542, Art. 13(2)(b) — labelling of battery chemistry; Art. 13(6) — QR code access to data; Annex VI — labelling requirements",
+      "confidence_level": 97,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_bat_reg_02",
+      "rule_code": "BAT_REG_SUBSTANCES",
+      "rule_version": 1,
+      "regulation_code": "BATTERY_REG",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["BATTERIES"], "min": 1 },
+      "message_en": "Hazardous substance content must be declared for batteries. Minimum: declare presence/absence and concentration of: cadmium (>0.002%), lead (>0.004%), mercury (>0.0005%). Also declare cobalt, lithium, and nickel content to support supply chain due diligence (Battery Regulation Art. 10, 13(5)(e)).",
+      "message_fi": "Akkujen vaarallisten aineiden pitoisuus on ilmoitettava. Vähintään: ilmoita kadmiumin (>0,002 %), lyijyn (>0,004 %) ja elohopean (>0,0005 %) esiintyminen/puuttuminen ja pitoisuus. Ilmoita myös koboltti-, litium- ja nikkelipitoisuus toimitusketjun huolellisuuden tueksi (akkuasetus Art. 10, 13(5)(e)).",
+      "legal_reference": "Regulation (EU) 2023/1542, Art. 6 — restrictions on hazardous substances (Hg, Cd thresholds); Art. 10 — substances of concern (Co, Pb, Li, Ni); Art. 13(5)(e) — labelling of hazardous substance content; Annex XIII — substances of concern",
+      "confidence_level": 96,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_bat_reg_03",
+      "rule_code": "BAT_REG_SAFETY_WARNINGS",
+      "rule_version": 1,
+      "regulation_code": "BATTERY_REG",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "safety_notes_json",
+      "condition_json": { "category_codes": ["BATTERIES"], "min": 1 },
+      "message_en": "Safety warnings are mandatory on battery labels and in accompanying information: disposal and recycling symbol (crossed-out wheeled bin), chemical hazard symbols where applicable (GHS pictograms), and instructions that the battery should be kept away from heat sources. State capacity and rated voltage.",
+      "message_fi": "Turvallisuusvaroitukset ovat pakollisia akkuetiketeissä ja mukana toimitetuissa tiedoissa: hävittämis- ja kierrätyssymboli (yliviivattu roskakori), kemiallisten vaarojen symbolit tapauksen mukaan (GHS-kuvakkeet) sekä ohjeet siitä, ettei akkua saa altistaa lämmölle. Ilmoita kapasiteetti ja nimellisjännite.",
+      "legal_reference": "Regulation (EU) 2023/1542, Art. 11 — general safety requirements; Art. 13(2) — labelling content; Annex VI — label content including crossed-out bin symbol; (EC) No 1272/2008 (CLP) — GHS hazard symbols for chemical content",
+      "confidence_level": 97,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_bat_reg_04",
+      "rule_code": "BAT_REG_RECYCLING_INFO",
+      "rule_version": 1,
+      "regulation_code": "BATTERY_REG",
+      "rule_type": "required_array_min",
+      "severity": "error",
+      "field_path": "recycling_instructions_json",
+      "condition_json": { "category_codes": ["BATTERIES"], "min": 1 },
+      "message_en": "End-of-life collection and recycling instructions are mandatory under the Battery Regulation EPR scheme (Art. 67-70). Inform users: (a) the battery must be separately collected, (b) free take-back is available, (c) where to return the battery (collection points, retailers, producers). Include the crossed-out wheeled bin symbol reference.",
+      "message_fi": "Elinkaaren lopun keräys- ja kierrätysohjeet ovat pakollisia akkuasetuksen laajennetun tuottajavastuun järjestelmässä (Art. 67–70). Tiedota käyttäjiä: (a) akku on kerättävä erikseen, (b) ilmainen palautus on saatavilla, (c) mihin akku palautetaan (keräyspisteet, vähittäiskauppiaat, tuottajat). Sisällytä viittaus yliviivattu roskakori -symboliin.",
+      "legal_reference": "Regulation (EU) 2023/1542, Art. 67-70 (EPR obligations); Art. 74(2) — duty to inform end-users about separate collection; Art. 13(2)(a) — crossed-out wheeled bin labelling",
+      "confidence_level": 98,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_bat_reg_05",
+      "rule_code": "BAT_REG_EU_DOC",
+      "rule_version": 1,
+      "regulation_code": "BATTERY_REG",
+      "rule_type": "required_document",
+      "severity": "error",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["BATTERIES"],
+        "doc_name_pattern": "EU.*declaration|declaration.*conformity|battery.*declar|conformity.*2023|CE.*mark|technical.*file"
+      },
+      "message_en": "An EU Declaration of Conformity is required for batteries placed on the EU market under the Battery Regulation (Art. 18) and any co-applicable directive (e.g. LVD for battery packs with integrated electronics). The DoC must reference Regulation (EU) 2023/1542 and confirm conformity with all applicable requirements.",
+      "message_fi": "EU-vaatimustenmukaisuusvakuutus vaaditaan EU:n markkinoille saatettaville akuille akkuasetuksen (Art. 18) ja kaikkien muiden sovellettavien direktiivien (esim. LVD integroitua elektroniikkaa sisältäville akku-paketeille) nojalla. Vakuutuksen on viitattava asetukseen (EU) 2023/1542 ja vahvistettava vaatimustenmukaisuus kaikkien sovellettavien vaatimusten osalta.",
+      "legal_reference": "Regulation (EU) 2023/1542, Art. 18 — EU declaration of conformity; Art. 19 — CE marking (where applicable); Annex VIII — EU DoC template",
+      "confidence_level": 94,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_bat_reach_01",
+      "rule_code": "BAT_REACH_SVHC",
+      "rule_version": 1,
+      "regulation_code": "REACH",
+      "rule_type": "required_array_min",
+      "severity": "warning",
+      "field_path": "substances_json",
+      "condition_json": { "category_codes": ["BATTERIES"], "min": 1 },
+      "message_en": "Batteries may contain SVHC candidates: cobalt compounds (cobalt(II) sulphate is on the Candidate List), nickel sulphate, and lithium compounds are under REACH scrutiny. Declare any SVHC present above 0.1% w/w to enable downstream communication obligations under REACH Art. 33.",
+      "message_fi": "Akut saattavat sisältää SVHC-ehdokkaita: koboltinyhdisteet (koboltti(II)sulfaatti on ehdokaslistalla), nikkeli(II)sulfaatti ja litiumyhdisteet ovat REACH-tarkastelun kohteena. Ilmoita kaikki SVHC-aineet, joita esiintyy yli 0,1 % (p/p) pitoisuudella, REACH Art. 33 -mukaisten toimitusketjun viestintävelvoitteiden mahdollistamiseksi.",
+      "legal_reference": "REACH Art. 33 (SVHC communication in articles); ECHA SVHC Candidate List — cobalt(II) sulphate (EC 233-334-2), nickel sulphate (EC 232-104-9); (EC) No 1907/2006",
+      "confidence_level": 93,
+      "requires_human_review": false,
+      "requirement_scope": "mandatory_EU"
+    },
+    {
+      "id": "rule_bat_reg_06",
+      "rule_code": "BAT_REG_CARBON_FOOTPRINT",
+      "rule_version": 1,
+      "regulation_code": "BATTERY_REG",
+      "rule_type": "required_document",
+      "severity": "info",
+      "field_path": null,
+      "condition_json": {
+        "category_codes": ["BATTERIES"],
+        "doc_name_pattern": "carbon.*footprint|CO2|GHG|greenhouse.*gas|climate|LCA|life.*cycle.*assess|footprint.*declar"
+      },
+      "message_en": "(Phased requirement — verify applicability) Carbon footprint declarations are required under Battery Regulation Art. 38 for EV batteries (from August 2025), LMT batteries (from August 2025), and industrial batteries ≥2kWh (from August 2025). Portable batteries are NOT currently subject to this requirement. Upload the carbon footprint declaration if your battery type is in scope.",
+      "message_fi": "(Vaiheistettu vaatimus — tarkista sovellettavuus) Hiilijalanjälki-ilmoitukset ovat pakollisia akkuasetuksen Art. 38:n nojalla sähköajoneuvojen akuille (elokuusta 2025), LMT-akuille (elokuusta 2025) ja teollisuusakuille ≥2kWh (elokuusta 2025). Kannettaville akuille ei tällä hetkellä ole tätä vaatimusta. Lataa hiilijalanjälki-ilmoitus, jos akkutyyppisi kuuluu soveltamisalaan.",
+      "legal_reference": "Regulation (EU) 2023/1542, Art. 38 — carbon footprint declarations; Art. 39 — carbon footprint performance classes; Commission Delegated Regulation (EU) 2024/1682 (carbon footprint calculation method)",
+      "confidence_level": 82,
+      "requires_human_review": true,
+      "requirement_scope": "mandatory_EU",
+      "human_review_reason": "Carbon footprint obligation depends on battery sub-type (EV, LMT, industrial, portable) and precise application date of Commission implementing regulations. The current schema has no battery sub-type field, making reliable automated evaluation impossible. Severity set to 'info' only. A future rule should be gated on a battery_subtype field."
+    }
+  ]
+}
