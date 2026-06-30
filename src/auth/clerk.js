@@ -82,7 +82,7 @@ export function extractBearerToken(request) {
   return auth.startsWith('Bearer ') ? auth.slice(7) : null;
 }
 
-// Returns { tenant, userId, orgRole } or null
+// Returns { tenant, userId, orgRole } on success, { error, status } on blocked, or null on not-found.
 export async function getTenantContext(payload, env) {
   if (!payload?.org_id) return null;
 
@@ -91,7 +91,11 @@ export async function getTenantContext(payload, env) {
   ).bind(payload.org_id).first();
 
   if (!tenant) return null;
-  if (!['trial', 'active'].includes(tenant.status)) return null;
+
+  // trial and active are allowed; all other statuses are blocked — return specific error
+  if (!['trial', 'active'].includes(tenant.status)) {
+    return { error: `tenant_${tenant.status}`, status: 403 };
+  }
 
   return { tenant, userId: payload.sub, orgRole: payload.org_role };
 }
