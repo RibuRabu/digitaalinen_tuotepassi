@@ -6,6 +6,7 @@ import {
   handleGetAdminProduct, handleCreateProduct, handleUpdateCarrier,
   handleListTenants, handleGetTenant, handleListUnclaimedProducts,
   handleAdminClaimProduct, handleUpdateTenant, handleAdminCreateProductForTenant,
+  handleAdminStats,
 } from './routes/admin.js';
 import {
   handleListProducts, handleCreateProduct as handleTenantCreateProduct,
@@ -135,7 +136,10 @@ export default {
       const rest = pathname.slice('/api/admin/'.length);
 
       // Platform admin routes (Clerk auth)
-      if (rest === 'tenants' && method === 'GET') {
+      if (rest === 'stats' && method === 'GET') {
+        response = await handleAdminStats(request, env);
+      }
+      else if (rest === 'tenants' && method === 'GET') {
         response = await handleListTenants(request, env);
       }
       else if (rest === 'products/unclaimed' && method === 'GET') {

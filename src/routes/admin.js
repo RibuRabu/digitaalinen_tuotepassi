@@ -150,11 +150,23 @@ export async function handleListTenants(request, env) {
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);
 
   const { results } = await env.DB.prepare(
-    `SELECT id, name, slug, plan, status, billing_status, product_limit, created_at
+    `SELECT id, name, slug, clerk_org_id, plan, status, billing_status, product_limit, created_at
      FROM tenants ORDER BY created_at DESC LIMIT ? OFFSET ?`
   ).bind(limit, offset).all();
 
   return json({ tenants: results, limit, offset });
+}
+
+export async function handleAdminStats(request, env) {
+  const admin = await requirePlatformAdmin(request, env);
+  if (!admin) return json({ error: 'unauthorized' }, 401);
+
+  const [tenantRow, productRow] = await Promise.all([
+    env.DB.prepare('SELECT COUNT(*) as n FROM tenants WHERE deleted_at IS NULL').first(),
+    env.DB.prepare('SELECT COUNT(*) as n FROM products').first(),
+  ]);
+
+  return json({ tenant_count: tenantRow?.n ?? 0, product_count: productRow?.n ?? 0 });
 }
 
 export async function handleGetTenant(request, env, tenantId) {
