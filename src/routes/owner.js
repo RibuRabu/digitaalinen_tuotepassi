@@ -142,5 +142,31 @@ export async function handleOwnerUploadDocument(request, env, token) {
     "INSERT INTO product_events (id, product_id, event_type, event_data_json, actor_type) VALUES (?, ?, 'document_uploaded', ?, 'owner')"
   ).bind(newId(), product.id, JSON.stringify({ key, name: file.name })).run();
 
-  return json({ url: fileUrl, name: file.name }, 201);
+  return json({ id: docId, url: fileUrl, name: file.name }, 201);
+}
+
+export async function handleOwnerDeleteDocument(env, token, docId) {
+  if (!token || !docId) return json({ error: 'not_found' }, 404);
+
+  const product = await env.DB.prepare(
+    'SELECT id, compliance_documents_json FROM products WHERE owner_token = ?'
+  ).bind(token).first();
+  if (!product) return json({ error: 'not_found' }, 404);
+
+  const doc = await env.DB.prepare(
+    'SELECT id FROM product_documents WHERE id = ? AND product_id = ?'
+  ).bind(docId, product.id).first();
+  if (!doc) return json({ error: 'not_found' }, 404);
+
+  await env.DB.prepare('DELETE FROM product_documents WHERE id = ?').bind(docId).run();
+
+  // Remove from JSON blob for backward compat
+  let docs = [];
+  try { docs = JSON.parse(product.compliance_documents_json || '[]'); } catch {}
+  docs = docs.filter(d => d.id !== docId);
+  await env.DB.prepare(
+    "UPDATE products SET compliance_documents_json = ?, version = version + 1, updated_at = datetime('now') WHERE id = ?"
+  ).bind(JSON.stringify(docs), product.id).run();
+
+  return json({ ok: true });
 }

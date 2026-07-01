@@ -188,9 +188,12 @@ function renderAll(app, p) {
   ).join('');
 
   const docsHtml = docs.length
-    ? docs.map(d => `<div class="doc-item">
+    ? docs.map(d => `<div class="doc-item" data-doc-id="${esc(d.id || '')}">
         <span class="doc-name">${esc(d.name)}</span>
-        ${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>` : ''}
+        <div style="display:flex;gap:.5rem;align-items:center">
+          ${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>` : ''}
+          ${d.id ? `<button type="button" class="btn-link doc-del-btn" style="color:var(--c-err)" data-doc-id="${esc(d.id)}">Poista</button>` : ''}
+        </div>
       </div>`).join('')
     : '<div class="empty-state">Ei asiakirjoja.</div>';
 
@@ -408,11 +411,31 @@ function renderAll(app, p) {
       const list = document.getElementById('doc-list');
       const empty = list.querySelector('.empty-state');
       if (empty) empty.remove();
-      list.insertAdjacentHTML('beforeend', `<div class="doc-item">
+      list.insertAdjacentHTML('beforeend', `<div class="doc-item" data-doc-id="${esc(doc.id || '')}">
         <span class="doc-name">${esc(doc.name)}</span>
-        <a href="${esc(doc.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <a href="${esc(doc.url)}" target="_blank" rel="noopener" class="btn-link">Avaa ↗</a>
+          ${doc.id ? `<button type="button" class="btn-link doc-del-btn" style="color:var(--c-err)" data-doc-id="${esc(doc.id)}">Poista</button>` : ''}
+        </div>
       </div>`);
     } catch { setMsg(msg, 'Yhteysvirhe.', 'err'); }
+  });
+
+  // Document delete (event delegation)
+  document.getElementById('doc-list').addEventListener('click', async ev => {
+    const btn = ev.target.closest('.doc-del-btn');
+    if (!btn) return;
+    const docId = btn.dataset.docId;
+    if (!docId || !confirm('Poistetaanko tiedosto pysyvästi?')) return;
+    btn.disabled = true;
+    try {
+      const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}/document/${encodeURIComponent(docId)}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error();
+      btn.closest('.doc-item')?.remove();
+      if (!document.querySelector('#doc-list .doc-item')) {
+        document.getElementById('doc-list').innerHTML = '<div class="empty-state">Ei asiakirjoja.</div>';
+      }
+    } catch { btn.disabled = false; alert('Poisto epäonnistui.'); }
   });
 
   // Translations

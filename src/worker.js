@@ -1,6 +1,6 @@
 import { json } from './utils.js';
 import { handlePublicProduct, handlePassport, handleListCategories } from './routes/public.js';
-import { handleGetOwnerProduct, handleUpdateOwnerProduct, handleOwnerUploadDocument } from './routes/owner.js';
+import { handleGetOwnerProduct, handleUpdateOwnerProduct, handleOwnerUploadDocument, handleOwnerDeleteDocument } from './routes/owner.js';
 import { handleServeFile } from './routes/files.js';
 import {
   handleGetAdminProduct, handleCreateProduct, handleUpdateCarrier,
@@ -111,6 +111,11 @@ export default {
       if (rest.endsWith('/document') && method === 'POST') {
         const token = decodeURIComponent(rest.slice(0, -'/document'.length));
         response = await handleOwnerUploadDocument(request, env, token);
+      } else if (rest.includes('/document/') && method === 'DELETE') {
+        const parts = rest.split('/document/');
+        const token = decodeURIComponent(parts[0]);
+        const docId = decodeURIComponent(parts[1] || '');
+        response = await handleOwnerDeleteDocument(env, token, docId);
       } else {
         const token = decodeURIComponent(rest);
         if (method === 'GET')  response = await handleGetOwnerProduct(env, token);
