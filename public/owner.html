@@ -462,19 +462,18 @@ function renderCategorySelect(currentCategoryId) {
   const opts = ['<option value="">— Ei kategoriaa —</option>'];
   const parents = allCategories.filter(c => !c.parent_id);
   const children = allCategories.filter(c => c.parent_id);
-  for (const p of parents) {
-    opts.push(`<optgroup label="${esc(p.name_fi)}">`);
-    const subs = children.filter(c => c.parent_id === p.id);
-    if (subs.length) {
+  const hasChildren = children.length > 0;
+  for (const cat of parents) {
+    const subs = children.filter(c => c.parent_id === cat.id);
+    if (hasChildren && subs.length) {
+      opts.push(`<optgroup label="${esc(cat.name_fi)}">`);
       for (const s of subs) {
-        const sel_ = s.id === currentCategoryId ? ' selected' : '';
-        opts.push(`<option value="${esc(s.id)}"${sel_}>${esc(s.name_fi)}</option>`);
+        opts.push(`<option value="${esc(s.id)}"${s.id === currentCategoryId ? ' selected' : ''}>${esc(s.name_fi)}</option>`);
       }
-    } else {
-      const sel_ = p.id === currentCategoryId ? ' selected' : '';
-      opts.push(`<option value="${esc(p.id)}"${sel_}>${esc(p.name_fi)}</option>`);
+      opts.push('</optgroup>');
+    } else if (!hasChildren || !cat.parent_id) {
+      opts.push(`<option value="${esc(cat.id)}"${cat.id === currentCategoryId ? ' selected' : ''}>${esc(cat.name_fi)}</option>`);
     }
-    opts.push('</optgroup>');
   }
   sel.innerHTML = opts.join('');
 }
