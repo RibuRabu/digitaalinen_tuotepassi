@@ -9,6 +9,7 @@ import { verifyClerkJWT, extractBearerToken, getTenantContext } from '../auth/cl
 import { buildCreateProductColumns, buildCreateProductValues } from './admin.js';
 
 async function requireTenant(request, env) {
+  console.log('[requireTenant-enter]');
   const token = extractBearerToken(request);
   const payload = await verifyClerkJWT(token, env);
   if (!payload) return { error: 'unauthorized', status: 401 };
@@ -18,18 +19,23 @@ async function requireTenant(request, env) {
   // Accept X-Organization-Id header as a verified fallback (the user is still
   // authenticated via the JWT — we just need the org they're operating under).
   const orgId = payload.org_id || request.headers.get('X-Organization-Id') || null;
+  const headerOrgId = request.headers.get('X-Organization-Id') ?? null;
+  const jwtOrgId = payload.org_id ?? null;
 
   console.log('[tenant-auth]', JSON.stringify({
     path: new URL(request.url).pathname,
     hasToken: Boolean(token),
-    jwtOrgId: payload.org_id ?? null,
-    headerOrgId: request.headers.get('X-Organization-Id') ?? null,
+    jwtOrgId,
+    headerOrgId,
     resolvedOrgId: orgId,
     sub: payload.sub ?? null,
     azp: payload.azp ?? null,
   }));
 
-  if (!orgId) return { error: 'no_active_organization', status: 403 };
+  if (!orgId) {
+    console.log('[no-active-org]', JSON.stringify({ jwtOrgId, headerOrgId, resolvedOrgId: orgId }));
+    return { error: 'no_active_organization', status: 403 };
+  }
 
   const ctx = await getTenantContext({ ...payload, org_id: orgId }, env);
   if (!ctx) return { error: 'tenant_not_found', status: 403 };
@@ -40,6 +46,8 @@ async function requireTenant(request, env) {
 
 // GET /api/tenant/products
 export async function handleListProducts(request, env) {
+  console.log('[products-handler-enter]', { path: request.url });
+  console.log('[before-requireTenant]');
   const ctx = await requireTenant(request, env);
   if (ctx.error) return json({ error: ctx.error }, ctx.status);
 
