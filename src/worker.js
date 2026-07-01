@@ -236,6 +236,10 @@ export default {
     if (pathname === '/admin.html') return json({ error: 'not_found' }, 404);
     if (!response) {
       const r = await env.ASSETS.fetch(request);
+      if (r.status === 404) {
+        const page = await serveAsset(request, env, '/404');
+        return new Response(page.body, { status: 404, headers: page.headers });
+      }
       return withSecurityHeaders(r);
     }
 
