@@ -17,10 +17,29 @@ import {
 import { handleClerkWebhook } from './routes/webhooks.js';
 import { handleCompliance } from './routes/compliance.js';
 
-function serveAsset(request, env, pathname) {
+async function serveAsset(request, env, pathname) {
   const target = new URL(request.url);
   target.pathname = pathname;
-  return env.ASSETS.fetch(new Request(target, request));
+  const r = await env.ASSETS.fetch(new Request(target, request));
+  return withSecurityHeaders(r);
+}
+
+function withSecurityHeaders(response) {
+  const r = new Response(response.body, response);
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src https://fonts.gstatic.com",
+    "connect-src 'self'",
+    "img-src 'self' data: blob:",
+    "frame-ancestors 'none'",
+  ].join('; ');
+  r.headers.set('Content-Security-Policy', csp);
+  r.headers.set('X-Content-Type-Options', 'nosniff');
+  r.headers.set('X-Frame-Options', 'DENY');
+  r.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  return r;
 }
 
 function withCors(response, request, env) {
@@ -204,7 +223,11 @@ export default {
     }
 
     // ── Static assets fallthrough ─────────────────────────────────────────────
-    if (!response) return env.ASSETS.fetch(request);
+    if (pathname === '/admin.html') return json({ error: 'not_found' }, 404);
+    if (!response) {
+      const r = await env.ASSETS.fetch(request);
+      return withSecurityHeaders(r);
+    }
 
     return withCors(response, request, env);
   },
