@@ -8,6 +8,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
+<style>
+.eu-badge {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: .05em;
+  color: var(--c-ok); background: var(--c-ok-dim);
+  border: 1px solid var(--c-ok-ring); border-radius: 999px;
+  padding: .25rem .65rem; margin-bottom: var(--sp-3);
+}
+</style>
 </head>
 <body>
 <div class="page" id="app">
@@ -106,10 +115,15 @@ function render(app, p) {
         (mfrAddr ? dataRow('Osoite', mfrAddr) : ''))
     : '';
 
+  const euBadge = (p.compliance_status === 'complete' || p.compliance_status === 'verified')
+    ? '<span class="eu-badge">✓ EU-vaatimusten mukainen</span>'
+    : '';
+
   app.innerHTML = `
     <div class="system-badge">EU · Digitaalinen tuotepassi</div>
 
     <div class="pp-header">
+      ${euBadge}
       <h1 class="pp-name">${esc(name)}</h1>
       ${brand ? `<p class="pp-brand">${esc(brand)}</p>` : ''}
     </div>

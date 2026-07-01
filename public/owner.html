@@ -36,6 +36,13 @@
   transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 .trans-toggle-btn:hover { color: var(--c-text-1); border-color: var(--c-text-2); }
+.comp-score { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--fw-semibold); line-height: 1; }
+.comp-score--ok  { color: var(--c-ok); }
+.comp-score--mid { color: var(--c-warn); }
+.comp-list { list-style: none; padding: 0; margin-top: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); }
+.comp-list li { font-size: var(--text-sm); color: var(--c-text-2); display: flex; align-items: flex-start; gap: var(--sp-2); line-height: 1.5; }
+.comp-list li::before { content: '!'; font-family: var(--font-mono); font-size: .6rem; font-weight: bold; color: var(--c-warn); flex-shrink: 0; background: var(--c-warn-dim); border: 1px solid var(--c-warn-ring); border-radius: 50%; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; margin-top: .15rem; }
+.comp-list--warn li::before { content: '▲'; font-size: .5rem; }
 </style>
 </head>
 <body>
@@ -218,6 +225,8 @@ function renderAll(app, p) {
         </div>
       </div>
     </div>
+
+    <div id="compliance-panel"></div>
 
     <form id="edit-form">
       <div class="form-section">
@@ -404,6 +413,8 @@ function renderAll(app, p) {
     section.style.display = isOpen ? 'none' : 'block';
     btn.textContent = isOpen ? '▸ Lisää tai muokkaa käännöksiä' : '▾ Piilota käännökset';
   });
+
+  loadCompliance(p.product_uid);
 }
 
 function setMsg(el, text, type) {
@@ -425,6 +436,44 @@ function saveLangState() {
   const hasContent = Object.values(t).some(v => Array.isArray(v) ? v.length > 0 : v !== '');
   if (hasContent) allTranslations[activeLang] = t;
   else delete allTranslations[activeLang];
+}
+
+async function loadCompliance(productUid) {
+  const panel = document.getElementById('compliance-panel');
+  if (!panel || !productUid) return;
+  try {
+    const r = await fetch(`/api/v1/passport/${encodeURIComponent(productUid)}/compliance`);
+    if (!r.ok) return;
+    const c = await r.json();
+    renderCompliancePanel(panel, c);
+  } catch { /* non-critical — panel stays empty */ }
+}
+
+function renderCompliancePanel(panel, c) {
+  const pct = c.score ?? 0;
+  const scoreCls = pct >= 80 ? 'ok' : 'mid';
+  const statusMsg = c.status === 'complete'
+    ? '<span class="msg msg--ok" style="font-size:var(--text-sm)">✓ EU-vaatimustenmukaisuus täydellinen</span>'
+    : `<span class="msg msg--err" style="font-size:var(--text-sm)">${c.missing.length} puuttuvaa — täydennä alla olevaan lomakkeeseen</span>`;
+
+  const missingHtml = c.missing.length
+    ? `<ul class="comp-list">${c.missing.map(m => `<li>${esc(m.message_fi || m.message_en || m.rule_code)}</li>`).join('')}</ul>`
+    : '';
+  const warnHtml = c.warnings.length
+    ? `<ul class="comp-list comp-list--warn" style="margin-top:var(--sp-2)">${c.warnings.map(w => `<li>${esc(w.message_fi || w.message_en || w.rule_code)}</li>`).join('')}</ul>`
+    : '';
+
+  panel.innerHTML = `
+    <div class="form-section" style="margin-bottom:var(--sp-4)">
+      <div class="form-section-head">Vaatimustenmukaisuus</div>
+      <div class="form-field">
+        <div style="display:flex;align-items:center;gap:var(--sp-4);flex-wrap:wrap;margin-bottom:${c.missing.length || c.warnings.length ? 'var(--sp-1)' : '0'}">
+          <span class="comp-score comp-score--${scoreCls}">${pct}%</span>
+          ${statusMsg}
+        </div>
+        ${missingHtml}${warnHtml}
+      </div>
+    </div>`;
 }
 
 main();

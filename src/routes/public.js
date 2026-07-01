@@ -11,6 +11,8 @@ export async function handlePublicProduct(env, slug) {
 
   const out = consumerDataFields(product);
   for (const field of ALWAYS_VISIBLE_FIELDS) out[field] = product[field];
+  out.compliance_status = product.compliance_status ?? 'not_started';
+  out.published_at = product.published_at ?? null;
   return json(out);
 }
 
