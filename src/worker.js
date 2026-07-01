@@ -12,7 +12,7 @@ import {
   handleGetTenantSelf,
   handleListProducts, handleCreateProduct as handleTenantCreateProduct,
   handleGetProduct, handleUpdateProduct, handleDeleteProduct,
-  handleUploadDocument, handleRegenerateShareLink, handleClaimProduct,
+  handleUploadDocument, handleDeleteDocument, handleRegenerateShareLink, handleClaimProduct,
 } from './routes/tenant.js';
 import { handleClerkWebhook } from './routes/webhooks.js';
 import { handleCompliance } from './routes/compliance.js';
@@ -155,6 +155,12 @@ export default {
         if (productRest.endsWith('/document') && method === 'POST') {
           const slug = decodeURIComponent(productRest.slice(0, -'/document'.length));
           response = await handleUploadDocument(request, env, slug);
+        }
+        else if (productRest.includes('/document/') && method === 'DELETE') {
+          const parts = productRest.split('/document/');
+          const slug = decodeURIComponent(parts[0]);
+          const docId = decodeURIComponent(parts[1] || '');
+          response = await handleDeleteDocument(request, env, slug, docId);
         }
         else if (productRest.endsWith('/share-link') && method === 'POST') {
           const slug = decodeURIComponent(productRest.slice(0, -'/share-link'.length));

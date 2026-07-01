@@ -334,6 +334,37 @@ export async function handleUploadDocument(request, env, slug) {
   return json({ id: docId, url: fileUrl, name: file.name }, 201);
 }
 
+// DELETE /api/tenant/product/:slug/document/:docId
+export async function handleDeleteDocument(request, env, slug, docId) {
+  const ctx = await requireTenant(request, env);
+  if (ctx.error) return json({ error: ctx.error }, ctx.status);
+
+  const product = await env.DB.prepare(
+    'SELECT id, compliance_documents_json FROM products WHERE public_slug = ? AND tenant_id = ?'
+  ).bind(slug, ctx.tenant.id).first();
+  if (!product) return json({ error: 'not_found' }, 404);
+
+  const doc = await env.DB.prepare(
+    'SELECT id FROM product_documents WHERE id = ? AND product_id = ?'
+  ).bind(docId, product.id).first();
+  if (!doc) return json({ error: 'not_found' }, 404);
+
+  await env.DB.prepare('DELETE FROM product_documents WHERE id = ?').bind(docId).run();
+
+  let docs = [];
+  try { docs = JSON.parse(product.compliance_documents_json || '[]'); } catch {}
+  docs = docs.filter(d => d.id !== docId);
+  await env.DB.prepare(
+    "UPDATE products SET compliance_documents_json = ?, version = version + 1, updated_at = datetime('now') WHERE id = ?"
+  ).bind(JSON.stringify(docs), product.id).run();
+
+  await env.DB.prepare(
+    "INSERT INTO product_events (id, product_id, event_type, event_data_json, actor_type) VALUES (?, ?, 'document_deleted', ?, 'tenant')"
+  ).bind(newId(), product.id, JSON.stringify({ doc_id: docId, by: ctx.userId })).run();
+
+  return json({ ok: true });
+}
+
 // POST /api/tenant/product/:slug/share-link
 // Regenerates owner_token — old /owner/{token} links stop working
 export async function handleRegenerateShareLink(request, env, slug) {
