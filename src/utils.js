@@ -31,7 +31,8 @@ export const ALWAYS_VISIBLE_FIELDS = [
 
 export const DEFAULT_CONSUMER_VISIBILITY = [
   'product_name', 'brand_name', 'manufacturer_name', 'manufacturer_email',
-  'manufacturer_address', 'product_type', 'materials_json',
+  'manufacturer_address', 'responsible_operator_name', 'responsible_operator_email',
+  'responsible_operator_address', 'product_type', 'materials_json',
   'care_instructions_json', 'repair_instructions_json',
   'recycling_instructions_json', 'safety_notes_json',
 ];

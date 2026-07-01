@@ -24,6 +24,10 @@
   border: 1px solid var(--c-ok-ring); border-radius: 999px;
   padding: .25rem .65rem; margin-bottom: var(--sp-3);
 }
+.pp-type {
+  font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: .06em;
+  text-transform: uppercase; color: var(--c-text-3); margin-bottom: var(--sp-2);
+}
 </style>
 </head>
 <body>
@@ -122,9 +126,13 @@ function render(app, p) {
   const tr = getTranslation(p);
   const name    = tv(p, tr, 'product_name');
   const brand   = tv(p, tr, 'brand_name');
-  const mfrName = tv(p, tr, 'manufacturer_name') || p.manufacturer_name || '';
-  const mfrMail = p.manufacturer_email || '';
-  const mfrAddr = p.manufacturer_address || '';
+  const mfrName  = tv(p, tr, 'manufacturer_name') || p.manufacturer_name || '';
+  const mfrMail  = p.manufacturer_email || '';
+  const mfrAddr  = p.manufacturer_address || '';
+  const opName   = tv(p, tr, 'responsible_operator_name') || p.responsible_operator_name || '';
+  const opMail   = p.responsible_operator_email || '';
+  const opAddr   = p.responsible_operator_address || '';
+  const prodType = tv(p, tr, 'product_type') || p.product_type || '';
 
   const materials = tlist(p, tr, 'materials_json',              'materials');
   const care      = tlist(p, tr, 'care_instructions_json',      'care_instructions');
@@ -137,6 +145,13 @@ function render(app, p) {
         (mfrName ? dataRow('Nimi', mfrName) : '') +
         (mfrMail ? dataRow('Sähköposti', mfrMail) : '') +
         (mfrAddr ? dataRow('Osoite', mfrAddr) : ''))
+    : '';
+
+  const opSection = (opName || opMail || opAddr)
+    ? section('Vastuullinen operaattori (EU)',
+        (opName ? dataRow('Nimi', opName) : '') +
+        (opMail ? dataRow('Sähköposti', opMail) : '') +
+        (opAddr ? dataRow('Osoite', opAddr) : ''))
     : '';
 
   const euBadge = (p.compliance_status === 'complete' || p.compliance_status === 'verified')
@@ -152,7 +167,9 @@ function render(app, p) {
       ${brand ? `<p class="pp-brand">${esc(brand)}</p>` : ''}
     </div>
 
+    ${prodType ? `<p class="pp-type">${esc(prodType)}</p>` : ''}
     ${mfrSection}
+    ${opSection}
     ${listSection('Materiaalit', materials)}
     ${listSection('Hoito-ohjeet', care)}
     ${listSection('Korjausohjeet', repair)}
