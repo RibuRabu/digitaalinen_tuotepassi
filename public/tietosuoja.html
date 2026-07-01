@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tietosuojaseloste – Digitaalinen tuotepassi</title>
+<meta name="description" content="Lue, miten Digitaalinen tuotepassi -palvelu käsittelee henkilötietoja GDPR:n mukaisesti.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+body { background: var(--c-bg); min-height: 100vh; }
+body::before { display: none; }
+.page { animation: none; max-width: none; padding: 0; margin: 0; }
+
+.lp-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(244,246,248,.93);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--c-border);
+}
+.lp-nav-inner {
+  max-width: 1080px; margin: 0 auto;
+  padding: var(--sp-3) var(--sp-6);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4);
+}
+.lp-logo {
+  font-family: var(--font-display); font-size: var(--text-base);
+  font-weight: var(--fw-semibold); color: var(--c-text-1);
+  display: flex; align-items: center; gap: var(--sp-2); text-decoration: none;
+}
+.lp-logo:hover { text-decoration: none; }
+.lp-logo-dot { width: 7px; height: 7px; background: var(--c-accent); border-radius: 50%; flex-shrink: 0; }
+.lp-nav-links { display: flex; align-items: center; gap: var(--sp-5); }
+.lp-nav-links a { font-size: var(--text-sm); color: var(--c-text-2); }
+.lp-nav-links a:hover { color: var(--c-text-1); text-decoration: none; }
+
+.lp-footer { background: var(--c-surface-1); border-top: 1px solid var(--c-border); padding: var(--sp-8) 0; }
+.lp-footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-4); }
+.lp-footer-links { display: flex; gap: var(--sp-5); flex-wrap: wrap; }
+.lp-footer-links a { font-size: var(--text-sm); color: var(--c-text-3); }
+.lp-footer-links a:hover { color: var(--c-text-2); text-decoration: none; }
+.lp-footer-copy { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-text-3); }
+
+.doc-wrap { max-width: 720px; margin: 0 auto; padding: var(--sp-12) var(--sp-6) var(--sp-16); }
+.doc-label {
+  font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-accent); margin-bottom: var(--sp-3);
+}
+.doc-wrap h1 { font-family: var(--font-display); font-size: 2rem; font-weight: var(--fw-semibold); margin-bottom: var(--sp-2); }
+.doc-meta { font-size: var(--text-sm); color: var(--c-text-3); margin-bottom: var(--sp-10); }
+.doc-wrap h2 { font-family: var(--font-display); font-size: 1.15rem; font-weight: var(--fw-semibold); margin: var(--sp-8) 0 var(--sp-3); color: var(--c-text-1); }
+.doc-wrap p { font-size: var(--text-sm); color: var(--c-text-2); line-height: 1.75; margin-bottom: var(--sp-4); }
+.doc-wrap ul { padding-left: 1.25rem; margin-bottom: var(--sp-4); }
+.doc-wrap ul li { font-size: var(--text-sm); color: var(--c-text-2); line-height: 1.75; margin-bottom: var(--sp-1); }
+.doc-wrap a { color: var(--c-accent); }
+.doc-wrap a:hover { text-decoration: underline; }
+.doc-divider { border: none; border-top: 1px solid var(--c-border); margin: var(--sp-8) 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<nav class="lp-nav">
+  <div class="lp-nav-inner">
+    <a class="lp-logo" href="/">
+      <span class="lp-logo-dot"></span>
+      Digitaalinen tuotepassi
+    </a>
+    <div class="lp-nav-links">
+      <a href="/">Etusivu</a>
+      <a href="/pricing">Hinnat</a>
+      <a href="/kayttoehdot">Käyttöehdot</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="doc-wrap">
+    <p class="doc-label">Juridinen dokumentti</p>
+    <h1>Tietosuojaseloste</h1>
+    <p class="doc-meta">Voimassa 1.7.2025 alkaen · GDPR (EU) 2016/679</p>
+
+    <p>
+      Tässä tietosuojaselosteessa kuvataan, miten Digitaalinen tuotepassi -palvelu
+      käsittelee henkilötietoja ja mitä oikeuksia sinulla rekisteröitynä on.
+    </p>
+
+    <h2>1. Rekisterinpitäjä</h2>
+    <p>
+      Digitaalinen tuotepassi -palvelun rekisterinpitäjä on palvelun tarjoava yritys.
+      Rekisterinpitäjän yhteystiedot löytyvät alla kohdasta "Yhteydenotot ja oikeudet".
+    </p>
+
+    <h2>2. Mitä tietoja keräämme</h2>
+    <p>Käsittelemme seuraavia henkilötietoja:</p>
+    <ul>
+      <li><strong>Tilin tiedot:</strong> sähköpostiosoite, nimi (valinnainen), organisaatio (valinnainen)</li>
+      <li><strong>Kirjautumistiedot:</strong> tunnistetiedot ja sessiota koskevat tiedot (Clerk-palvelun kautta)</li>
+      <li><strong>Tuotedata:</strong> luomasi tuotepassit sisältävät tuotetietoja, jotka eivät pääsääntöisesti sisällä henkilötietoja</li>
+      <li><strong>Käyttölokitiedot:</strong> IP-osoite, selaintyyppi, ajoitukset ja virhelokit palvelun ylläpitoa varten</li>
+      <li><strong>Laskutustiedot:</strong> tilauksen tila ja maksuhistoria (maksutapahtumat käsitellään Stripe-palvelun kautta)</li>
+    </ul>
+
+    <h2>3. Käsittelyn oikeusperuste</h2>
+    <ul>
+      <li><strong>Sopimuksen täytäntöönpano (GDPR 6.1 b):</strong> tilin tiedot ja palvelun tuottaminen</li>
+      <li><strong>Oikeutettu etu (GDPR 6.1 f):</strong> lokitiedot palvelun turvallisuuden ja laadun varmistamiseksi</li>
+      <li><strong>Lakisääteinen velvoite (GDPR 6.1 c):</strong> laskutukseen liittyvä kirjanpitoaineisto</li>
+    </ul>
+
+    <h2>4. Tietojen säilytys</h2>
+    <p>
+      Tilisi tietoja säilytetään niin kauan kuin tilisi on aktiivinen. Poistettaessa tili
+      henkilötiedot poistetaan 30 päivän kuluessa, ellei lakisääteinen kirjanpitovelvoite
+      (7 vuotta) edellytä pidempää säilytystä.
+    </p>
+    <p>
+      Käyttölokeja säilytetään enintään 90 päivää.
+    </p>
+
+    <h2>5. Tietojen luovuttaminen kolmansille osapuolille</h2>
+    <p>Käytämme seuraavia alihankkijoita henkilötietojen käsittelyyn:</p>
+    <ul>
+      <li><strong>Cloudflare Inc.</strong> — palvelininfrastruktuuri ja tietokantapalvelut (Workers, D1, R2); data sijaitsee Euroopan unionin alueella</li>
+      <li><strong>Clerk Inc.</strong> — kirjautumisen ja käyttäjätilien hallinta</li>
+      <li><strong>Stripe Inc.</strong> — maksujen käsittely; Stripe toimii itsenäisenä rekisterinpitäjänä maksukorttitietojen osalta</li>
+    </ul>
+    <p>
+      Emme myy henkilötietoja kolmansille osapuolille emmekä luovuta tietoja markkinointitarkoituksiin.
+    </p>
+
+    <h2>6. Kansainväliset siirrot</h2>
+    <p>
+      Cloudflare, Clerk ja Stripe sijaitsevat Yhdysvalloissa. Tietojen siirto EU:n ulkopuolelle
+      tapahtuu EU:n vakiosopimuslausekkeiden (SCC) perusteella. Kaikki alihankkijat ovat
+      sitoutuneet GDPR:n vaatimiin käsittelysopimuksiin.
+    </p>
+
+    <h2>7. Rekisteröidyn oikeudet</h2>
+    <p>Sinulla on oikeus:</p>
+    <ul>
+      <li><strong>Tarkastaa</strong> mitä tietoja sinusta on tallennettu</li>
+      <li><strong>Oikaista</strong> virheelliset tiedot</li>
+      <li><strong>Poistaa</strong> tietosi ("oikeus tulla unohdetuksi") — pyydä sähköpostitse</li>
+      <li><strong>Rajoittaa</strong> käsittelyä tietyissä tilanteissa</li>
+      <li><strong>Siirtää</strong> tietosi koneluettavassa muodossa</li>
+      <li><strong>Vastustaa</strong> käsittelyä oikeutetun edun perusteella</li>
+      <li><strong>Tehdä valitus</strong> valvontaviranomaiselle (Suomessa tietosuojavaltuutettu: <a href="https://tietosuoja.fi" target="_blank" rel="noopener">tietosuoja.fi</a>)</li>
+    </ul>
+
+    <h2>8. Evästeet ja seuranta</h2>
+    <p>
+      Palvelu ei käytä kolmannen osapuolen seurantaevästeitä eikä analytiikkatyökaluja.
+      Kirjautumisen ylläpitämiseen käytetään Clerk-palvelun sessioeväste, joka on
+      välttämätön palvelun toiminnalle.
+    </p>
+
+    <h2>9. Tietoturva</h2>
+    <p>
+      Kaikki tietoliikenne on salattu TLS 1.2+ -protokollalla. Pääsy tuotantotietokantaan
+      on rajattu henkilöstöön, jolla on perusteltua tarvetta. Salasanoja ei tallenneta
+      palveluumme — kirjautuminen tapahtuu Clerk-palvelun kautta.
+    </p>
+
+    <hr class="doc-divider">
+
+    <h2>10. Yhteydenotot ja oikeudet</h2>
+    <p>
+      Tietosuoja-asioita koskevat pyynnöt voit lähettää sähköpostitse
+      osoitteeseen <a href="mailto:tietosuoja@digitaalinentuotepassi.fi">tietosuoja@digitaalinentuotepassi.fi</a>.
+      Vastaamme pyyntöihin 30 päivän kuluessa.
+    </p>
+
+    <h2>11. Muutokset tähän selosteeseen</h2>
+    <p>
+      Voimme päivittää tätä selostetta palvelun kehittyessä. Oleellisista muutoksista
+      ilmoitamme rekisteröityneille käyttäjille sähköpostitse vähintään 14 päivää ennen
+      muutoksen voimaantuloa.
+    </p>
+  </div>
+</main>
+
+<footer class="lp-footer">
+  <div class="lp-c">
+    <div class="lp-footer-inner">
+      <div class="lp-footer-links">
+        <a href="/tietosuoja">Tietosuoja</a>
+        <a href="/kayttoehdot">Käyttöehdot</a>
+      </div>
+      <span class="lp-footer-copy">© 2025 Digitaalinen tuotepassi</span>
+    </div>
+  </div>
+</footer>
+
+</div><!-- .page -->
+
+<style>
+.lp-c { max-width: 1080px; margin: 0 auto; padding: 0 var(--sp-6); }
+</style>
+</body>
+</html>

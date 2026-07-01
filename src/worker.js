@@ -62,6 +62,9 @@ export default {
     // ── Static pages ─────────────────────────────────────────────────────────
     if (pathname.startsWith('/p/'))     return serveAsset(request, env, '/product');
     if (pathname.startsWith('/owner/')) return serveAsset(request, env, '/owner');
+    if (pathname === '/tietosuoja' || pathname === '/tietosuoja/')   return serveAsset(request, env, '/tietosuoja');
+    if (pathname === '/kayttoehdot' || pathname === '/kayttoehdot/') return serveAsset(request, env, '/kayttoehdot');
+    if (pathname === '/pricing' || pathname === '/pricing/')         return serveAsset(request, env, '/pricing');
 
     // ── CORS preflight ───────────────────────────────────────────────────────
     if (method === 'OPTIONS' && pathname.startsWith('/api/')) {

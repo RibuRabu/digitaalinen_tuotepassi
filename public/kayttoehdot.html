@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Käyttöehdot – Digitaalinen tuotepassi</title>
+<meta name="description" content="Digitaalinen tuotepassi -palvelun käyttöehdot. Lue ennen tilauksen tekemistä.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+body { background: var(--c-bg); min-height: 100vh; }
+body::before { display: none; }
+.page { animation: none; max-width: none; padding: 0; margin: 0; }
+
+.lp-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(244,246,248,.93);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--c-border);
+}
+.lp-nav-inner {
+  max-width: 1080px; margin: 0 auto;
+  padding: var(--sp-3) var(--sp-6);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4);
+}
+.lp-logo {
+  font-family: var(--font-display); font-size: var(--text-base);
+  font-weight: var(--fw-semibold); color: var(--c-text-1);
+  display: flex; align-items: center; gap: var(--sp-2); text-decoration: none;
+}
+.lp-logo:hover { text-decoration: none; }
+.lp-logo-dot { width: 7px; height: 7px; background: var(--c-accent); border-radius: 50%; flex-shrink: 0; }
+.lp-nav-links { display: flex; align-items: center; gap: var(--sp-5); }
+.lp-nav-links a { font-size: var(--text-sm); color: var(--c-text-2); }
+.lp-nav-links a:hover { color: var(--c-text-1); text-decoration: none; }
+
+.lp-footer { background: var(--c-surface-1); border-top: 1px solid var(--c-border); padding: var(--sp-8) 0; }
+.lp-footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-4); }
+.lp-footer-links { display: flex; gap: var(--sp-5); flex-wrap: wrap; }
+.lp-footer-links a { font-size: var(--text-sm); color: var(--c-text-3); }
+.lp-footer-links a:hover { color: var(--c-text-2); text-decoration: none; }
+.lp-footer-copy { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-text-3); }
+
+.lp-c { max-width: 1080px; margin: 0 auto; padding: 0 var(--sp-6); }
+
+.doc-wrap { max-width: 720px; margin: 0 auto; padding: var(--sp-12) var(--sp-6) var(--sp-16); }
+.doc-label {
+  font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: .08em;
+  text-transform: uppercase; color: var(--c-accent); margin-bottom: var(--sp-3);
+}
+.doc-wrap h1 { font-family: var(--font-display); font-size: 2rem; font-weight: var(--fw-semibold); margin-bottom: var(--sp-2); }
+.doc-meta { font-size: var(--text-sm); color: var(--c-text-3); margin-bottom: var(--sp-10); }
+.doc-wrap h2 { font-family: var(--font-display); font-size: 1.15rem; font-weight: var(--fw-semibold); margin: var(--sp-8) 0 var(--sp-3); color: var(--c-text-1); }
+.doc-wrap p { font-size: var(--text-sm); color: var(--c-text-2); line-height: 1.75; margin-bottom: var(--sp-4); }
+.doc-wrap ul { padding-left: 1.25rem; margin-bottom: var(--sp-4); }
+.doc-wrap ul li { font-size: var(--text-sm); color: var(--c-text-2); line-height: 1.75; margin-bottom: var(--sp-1); }
+.doc-wrap a { color: var(--c-accent); }
+.doc-wrap a:hover { text-decoration: underline; }
+.doc-divider { border: none; border-top: 1px solid var(--c-border); margin: var(--sp-8) 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<nav class="lp-nav">
+  <div class="lp-nav-inner">
+    <a class="lp-logo" href="/">
+      <span class="lp-logo-dot"></span>
+      Digitaalinen tuotepassi
+    </a>
+    <div class="lp-nav-links">
+      <a href="/">Etusivu</a>
+      <a href="/pricing">Hinnat</a>
+      <a href="/tietosuoja">Tietosuoja</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="doc-wrap">
+    <p class="doc-label">Juridinen dokumentti</p>
+    <h1>Käyttöehdot</h1>
+    <p class="doc-meta">Voimassa 1.7.2025 alkaen · Suomen laki</p>
+
+    <p>
+      Nämä käyttöehdot ("Ehdot") koskevat Digitaalinen tuotepassi -palvelun ("Palvelu")
+      käyttöä. Ottamalla Palvelun käyttöön hyväksyt nämä Ehdot. Lue Ehdot huolellisesti
+      ennen rekisteröitymistä.
+    </p>
+
+    <h2>1. Osapuolet</h2>
+    <p>
+      Palvelua tarjoaa Digitaalinen tuotepassi -palvelun ylläpitäjä ("Me" tai "Palveluntarjoaja").
+      "Asiakas" tai "sinä" tarkoittaa yritystä tai henkilöä, joka käyttää Palvelua.
+    </p>
+
+    <h2>2. Palvelun kuvaus</h2>
+    <p>
+      Palvelu tarjoaa digitaalisten tuotepassien ("DPP") luomiseen, hallintaan ja julkaisemiseen
+      tarkoitetun ohjelmiston verkkopalveluna (SaaS). Palvelu on suunniteltu EU:n ESPR-asetuksen
+      (EU 2024/1781) vaatimusten täyttämiseen.
+    </p>
+    <p>
+      Palvelu ei korvaa oikeudellista neuvontaa. Asiakkaan vastuulla on varmistaa, että
+      tuotepassien sisältö on totuudenmukainen ja täyttää sovellettavien säädösten vaatimukset.
+    </p>
+
+    <h2>3. Tilaukset ja hinnoittelu</h2>
+    <p>
+      Palvelu on saatavilla ilmaisessa Free-tasossa sekä maksullisissa Pro- ja Scale-tilauksissa.
+      Ajantasainen hinnasto löytyy osoitteesta <a href="/pricing">/pricing</a>.
+    </p>
+    <ul>
+      <li>Maksulliset tilaukset laskutetaan kuukausittain tai vuosittain etukäteen.</li>
+      <li>Hinnat sisältävät arvonlisäveron soveltuvissa tapauksissa.</li>
+      <li>Pidätämme oikeuden muuttaa hintoja ilmoittamalla asiasta 30 päivää etukäteen sähköpostitse.</li>
+    </ul>
+
+    <h2>4. Kokeilujakso ja peruuttaminen</h2>
+    <p>
+      Maksullisissa tilauksissa ei ole automaattista kokeilujaksoa. Voit peruuttaa tilauksesi
+      milloin tahansa kojelautasi kautta. Peruuttaminen tulee voimaan seuraavan laskutuskauden
+      alussa — et saa hyvitystä jo maksetusta kaudesta. Palvelu on käytettävissäsi peruutuksesta
+      huolimatta kuluvan laskutuskauden loppuun.
+    </p>
+
+    <h2>5. Asiakkaan vastuut</h2>
+    <p>Sinä olet vastuussa siitä, että:</p>
+    <ul>
+      <li>Tilillä käytetyt tiedot ovat totuudenmukaisia ja ajantasaisia.</li>
+      <li>Tuotepasseihin lisätty tieto ei loukkaa kolmansien osapuolien oikeuksia (tekijänoikeudet, tavaramerkit).</li>
+      <li>Tilin kirjautumistiedot pidetään salassa — olet vastuussa tilillä tapahtuvasta toiminnasta.</li>
+      <li>Palvelua ei käytetä lainvastaiseen toimintaan tai EU:n sähköisen viestinnän sääntöjen vastaisesti.</li>
+    </ul>
+
+    <h2>6. Palveluntarjoajan vastuut</h2>
+    <p>
+      Pyrimme pitämään Palvelun saatavilla vähintään 99 % ajasta (mittausjaksona kalenteri­kuukausi).
+      Suunnitelluista huoltokatkoista ilmoitamme etukäteen. Emme vastaa katkoista, jotka johtuvat
+      kolmansista osapuolista (Cloudflare, Clerk, Stripe) tai ylivoimaisesta esteestä.
+    </p>
+
+    <h2>7. Vastuunrajoitus</h2>
+    <p>
+      Palvelu tarjotaan "sellaisena kuin se on" ("as is"). Emme takaa, että Palvelu täyttää
+      kaikki sovellettavat EU-säädösvaatimukset toimialallasi — tämä on asiakkaan vastuulla.
+    </p>
+    <p>
+      Palveluntarjoajan kokonaisvastuu rajoittuu asiakkaan 12 kuukauden aikana maksamiin
+      tilausmaksuihin. Emme vastaa välillisistä vahingoista, kuten menetetystä liikevoitosta.
+    </p>
+
+    <h2>8. Immateriaali­oikeudet</h2>
+    <p>
+      Palvelun koodi, design ja dokumentaatio ovat Palveluntarjoajan omaisuutta.
+      Asiakkaalle myönnetään rajoitettu, ei-yksinomainen lisenssi Palvelun käyttöön
+      tilauksen voimassaoloajan.
+    </p>
+    <p>
+      Asiakkaan lisäämä data (tuotepassit, kuvat, asiakirjat) pysyy asiakkaan omaisuutena.
+      Asiakas myöntää Palveluntarjoajalle oikeuden tallentaa ja käsitellä dataa
+      Palvelun tuottamiseksi.
+    </p>
+
+    <h2>9. Salassapito</h2>
+    <p>
+      Kumpikin osapuoli sitoutuu pitämään salassa toiselta saamansa luottamukselliset tiedot
+      eikä luovuttamaan niitä kolmansille osapuolille ilman kirjallista suostumusta.
+    </p>
+
+    <h2>10. Palvelusopimuksen päättyminen</h2>
+    <p>
+      Voit irtisanoa tilauksen milloin tahansa. Me voimme irtisanoa tilin välittömästi,
+      jos toimit näiden Ehtojen vastaisesti. Tilin päättyessä datasi säilytetään 30 päivää,
+      minkä jälkeen se poistetaan pysyvästi — lataa tarvittavat tiedot ennen irtisanomista.
+    </p>
+
+    <h2>11. Muutokset ehtoihin</h2>
+    <p>
+      Voimme päivittää näitä Ehtoja. Oleellisista muutoksista ilmoitamme sähköpostitse
+      vähintään 30 päivää ennen voimaantuloa. Jatkamalla Palvelun käyttöä hyväksyt
+      päivitetyt Ehdot.
+    </p>
+
+    <hr class="doc-divider">
+
+    <h2>12. Sovellettava laki ja riidanratkaisu</h2>
+    <p>
+      Näihin Ehtoihin sovelletaan Suomen lakia. Erimielisyydet pyritään ratkaisemaan
+      ensisijaisesti neuvottelemalla. Jos sopimukseen ei päästä, riita ratkaistaan
+      Helsingin käräjäoikeudessa.
+    </p>
+
+    <h2>13. Yhteydenotot</h2>
+    <p>
+      Käyttöehtoihin liittyvät kysymykset voit lähettää osoitteeseen
+      <a href="mailto:legal@digitaalinentuotepassi.fi">legal@digitaalinentuotepassi.fi</a>.
+    </p>
+  </div>
+</main>
+
+<footer class="lp-footer">
+  <div class="lp-c">
+    <div class="lp-footer-inner">
+      <div class="lp-footer-links">
+        <a href="/tietosuoja">Tietosuoja</a>
+        <a href="/kayttoehdot">Käyttöehdot</a>
+      </div>
+      <span class="lp-footer-copy">© 2025 Digitaalinen tuotepassi</span>
+    </div>
+  </div>
+</footer>
+
+</div><!-- .page -->
+</body>
+</html>
