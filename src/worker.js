@@ -49,7 +49,14 @@ export default {
       return withCors(new Response(null, { status: 204 }), request, env);
     }
 
+    console.log('[router]', JSON.stringify({ pathname, method }));
+
     let response;
+
+    // ── Debug version (no auth) ───────────────────────────────────────────────
+    if (pathname === '/api/debug/version' && method === 'GET') {
+      return withCors(json({ version: 'billing-debug-2026-07-01', hasBillingRoute: true }), request, env);
+    }
 
     // ── Public API (no auth) ─────────────────────────────────────────────────
     if (pathname.startsWith('/api/public/product/') && method === 'GET') {
