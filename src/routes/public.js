@@ -7,7 +7,7 @@ export async function handlePublicProduct(env, slug) {
     'SELECT * FROM products WHERE public_slug = ?'
   ).bind(slug).first();
 
-  if (!product || product.status === 'archived') return json({ error: 'not_found' }, 404);
+  if (!product || product.status !== 'active') return json({ error: 'not_found' }, 404);
 
   const out = consumerDataFields(product);
   for (const field of ALWAYS_VISIBLE_FIELDS) out[field] = product[field];
@@ -23,7 +23,7 @@ export async function handlePassport(env, productUid) {
     'SELECT * FROM products WHERE product_uid = ?'
   ).bind(productUid).first();
 
-  if (!product || product.status === 'archived') return json({ error: 'not_found' }, 404);
+  if (!product || product.status !== 'active') return json({ error: 'not_found' }, 404);
 
   let languages = [];
   try { languages = JSON.parse(product.languages_json || '[]'); } catch {}
