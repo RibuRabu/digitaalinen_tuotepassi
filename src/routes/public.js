@@ -1,5 +1,12 @@
 import { json, consumerDataFields, ALWAYS_VISIBLE_FIELDS } from '../utils.js';
 
+export async function handleListCategories(env) {
+  const { results } = await env.DB.prepare(
+    'SELECT id, code, parent_id, name_fi, name_en FROM product_categories ORDER BY parent_id NULLS FIRST, name_fi ASC'
+  ).all();
+  return json({ categories: results });
+}
+
 export async function handlePublicProduct(env, slug) {
   if (!slug) return json({ error: 'not_found' }, 404);
 

@@ -145,6 +145,8 @@ function formField(key, label, type, value, hint) {
   return `<div class="form-field"><label class="form-lbl" for="${key}">${esc(label)}</label>${input}${hintHtml}</div>`;
 }
 
+let allCategories = [];
+
 async function main() {
   currentToken = getToken();
   const app = document.getElementById('app');
@@ -156,6 +158,14 @@ async function main() {
   if (!res.ok) { app.innerHTML = '<p class="msg msg--err">Tuotetta ei löytynyt.</p>'; return; }
 
   const p = await res.json();
+
+  // Load categories in parallel with render (non-blocking)
+  fetch('/api/public/categories').then(r => r.ok ? r.json() : { categories: [] })
+    .then(data => {
+      allCategories = data.categories || [];
+      renderCategorySelect(p.category_id);
+    }).catch(() => {});
+
   renderAll(app, p);
 }
 
@@ -249,6 +259,17 @@ function renderAll(app, p) {
         </div>
       </div>
 
+      <div class="form-section" id="category-section">
+        <div class="form-section-head">Tuotekategoria</div>
+        <div class="form-field">
+          <label class="form-lbl" for="category-select">Kategoria</label>
+          <select class="form-select" id="category-select">
+            <option value="">— Ladataan —</option>
+          </select>
+          <p class="form-hint">Kategoria määrittää mitkä EU-vaatimukset koskevat tuotettasi.</p>
+        </div>
+      </div>
+
       <div class="form-section">
         <div class="form-section-head">Perustiedot ja valmistaja</div>
         ${textFieldsHtml}
@@ -329,7 +350,11 @@ function renderAll(app, p) {
     ev.preventDefault();
     const msg = document.getElementById('edit-msg');
     setMsg(msg, 'Tallennetaan...', 'mute');
-    const payload = { status: document.getElementById('status').value };
+    const catSel = document.getElementById('category-select');
+    const payload = {
+      status: document.getElementById('status').value,
+      category_id: catSel ? (catSel.value || null) : undefined,
+    };
     for (const [k] of TEXT_FIELDS) payload[k] = document.getElementById(k).value;
     for (const [k] of LIST_FIELDS) {
       payload[k] = document.getElementById(k).value.split(',').map(s => s.trim()).filter(Boolean);
@@ -429,6 +454,29 @@ function renderAll(app, p) {
 function setMsg(el, text, type) {
   el.textContent = text;
   el.className = `msg msg--${type}`;
+}
+
+function renderCategorySelect(currentCategoryId) {
+  const sel = document.getElementById('category-select');
+  if (!sel || !allCategories.length) return;
+  const opts = ['<option value="">— Ei kategoriaa —</option>'];
+  const parents = allCategories.filter(c => !c.parent_id);
+  const children = allCategories.filter(c => c.parent_id);
+  for (const p of parents) {
+    opts.push(`<optgroup label="${esc(p.name_fi)}">`);
+    const subs = children.filter(c => c.parent_id === p.id);
+    if (subs.length) {
+      for (const s of subs) {
+        const sel_ = s.id === currentCategoryId ? ' selected' : '';
+        opts.push(`<option value="${esc(s.id)}"${sel_}>${esc(s.name_fi)}</option>`);
+      }
+    } else {
+      const sel_ = p.id === currentCategoryId ? ' selected' : '';
+      opts.push(`<option value="${esc(p.id)}"${sel_}>${esc(p.name_fi)}</option>`);
+    }
+    opts.push('</optgroup>');
+  }
+  sel.innerHTML = opts.join('');
 }
 
 function loadLang(lang) {

@@ -58,6 +58,10 @@ export async function handleUpdateOwnerProduct(request, env, token) {
     updates.visibility_json = JSON.stringify(visibility);
   }
 
+  if ('category_id' in body) {
+    updates.category_id = body.category_id || null;
+  }
+
   if ('translations' in body && body.translations !== null && typeof body.translations === 'object') {
     const clean = {};
     for (const [lang, fields] of Object.entries(body.translations)) {

@@ -1,5 +1,5 @@
 import { json } from './utils.js';
-import { handlePublicProduct, handlePassport } from './routes/public.js';
+import { handlePublicProduct, handlePassport, handleListCategories } from './routes/public.js';
 import { handleGetOwnerProduct, handleUpdateOwnerProduct, handleOwnerUploadDocument } from './routes/owner.js';
 import { handleServeFile } from './routes/files.js';
 import {
@@ -79,6 +79,11 @@ export default {
     if (pathname.startsWith('/api/public/product/') && method === 'GET') {
       const slug = decodeURIComponent(pathname.slice('/api/public/product/'.length));
       response = await handlePublicProduct(env, slug);
+    }
+
+    // ── Product categories (no auth) ─────────────────────────────────────────
+    else if (pathname === '/api/public/categories' && method === 'GET') {
+      response = await handleListCategories(env);
     }
 
     // ── Machine-readable passport (no auth) ──────────────────────────────────
