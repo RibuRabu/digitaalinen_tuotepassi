@@ -161,12 +161,21 @@ export async function handleAdminStats(request, env) {
   const admin = await requirePlatformAdmin(request, env);
   if (!admin) return json({ error: 'unauthorized' }, 401);
 
-  const [tenantRow, productRow] = await Promise.all([
-    env.DB.prepare('SELECT COUNT(*) as n FROM tenants WHERE deleted_at IS NULL').first(),
-    env.DB.prepare('SELECT COUNT(*) as n FROM products').first(),
+  const [tenantRow, productRow, activeRow, compliantRow, billingRow] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) as n FROM tenants WHERE deleted_at IS NULL").first(),
+    env.DB.prepare("SELECT COUNT(*) as n FROM products").first(),
+    env.DB.prepare("SELECT COUNT(*) as n FROM products WHERE status = 'active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as n FROM products WHERE compliance_status IN ('complete','verified')").first(),
+    env.DB.prepare("SELECT COUNT(*) as n FROM tenants WHERE billing_status = 'paid' AND deleted_at IS NULL").first(),
   ]);
 
-  return json({ tenant_count: tenantRow?.n ?? 0, product_count: productRow?.n ?? 0 });
+  return json({
+    tenant_count: tenantRow?.n ?? 0,
+    product_count: productRow?.n ?? 0,
+    active_product_count: activeRow?.n ?? 0,
+    compliant_product_count: compliantRow?.n ?? 0,
+    paying_tenant_count: billingRow?.n ?? 0,
+  });
 }
 
 export async function handleGetTenant(request, env, tenantId) {
