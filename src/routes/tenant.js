@@ -21,18 +21,12 @@ async function requireTenant(request, env) {
   const headerOrgId = request.headers.get('X-Organization-Id') ?? null;
   const jwtOrgId = payload.org_id ?? null;
 
-  console.log('[tenant-auth]', JSON.stringify({
-    path: new URL(request.url).pathname,
-    hasToken: Boolean(token),
-    jwtOrgId,
-    headerOrgId,
-    resolvedOrgId: orgId,
-    sub: payload.sub ?? null,
-    azp: payload.azp ?? null,
-  }));
-
   if (!orgId) {
-    console.log('[no-active-org]', JSON.stringify({ jwtOrgId, headerOrgId, resolvedOrgId: orgId }));
+    console.log(JSON.stringify({
+      level: 'warn', event: 'no_active_organization',
+      hasToken: Boolean(token), jwtOrgId, headerOrgId, resolvedOrgId: orgId,
+      sub: payload.sub ?? null, azp: payload.azp ?? null,
+    }));
     return { error: 'no_active_organization', status: 403 };
   }
 
