@@ -64,12 +64,14 @@ export async function handleListProducts(request, env) {
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10), 200);
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);
   const status = url.searchParams.get('status') || null;
+  const complianceStatus = url.searchParams.get('compliance_status') || null;
 
   let sql = `SELECT id, public_slug, product_uid, product_name, brand_name, status,
-             version, data_carrier_type, created_at, updated_at, published_at
+             compliance_status, version, data_carrier_type, created_at, updated_at, published_at
              FROM products WHERE tenant_id = ?`;
   const binds = [ctx.tenant.id];
   if (status) { sql += ' AND status = ?'; binds.push(status); }
+  if (complianceStatus) { sql += ' AND compliance_status = ?'; binds.push(complianceStatus); }
   sql += ' ORDER BY updated_at DESC LIMIT ? OFFSET ?';
   binds.push(limit, offset);
 
