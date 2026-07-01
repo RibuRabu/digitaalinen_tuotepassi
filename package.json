@@ -8,8 +8,8 @@
     "test": "playwright test",
     "test:smoke": "WORKER_URL=https://api.digitaalinentuotepassi.tulkintatila.fi playwright test",
     "db:create": "wrangler d1 create digitaalinen_tuotepassi",
-    "db:init": "wrangler d1 execute digitaalinen_tuotepassi --local --file=./schema.sql",
-    "db:init:remote": "wrangler d1 execute digitaalinen_tuotepassi --remote --file=./schema.sql"
+    "db:init": "wrangler d1 execute digitaalinen_tuotepassi --local --file=./schema_full.sql",
+    "db:init:remote": "wrangler d1 execute digitaalinen_tuotepassi --remote --file=./schema_full.sql"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

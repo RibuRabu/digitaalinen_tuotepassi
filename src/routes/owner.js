@@ -119,10 +119,16 @@ export async function handleOwnerUploadDocument(request, env, token) {
   });
 
   const fileUrl = `/api/files/${key}`;
+  const docId = newId();
+
+  // Write to product_documents (primary store) so tenant dashboard reads see the doc
+  await env.DB.prepare(
+    'INSERT INTO product_documents (id, product_id, tenant_id, name, file_key, file_type, file_size) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).bind(docId, product.id, product.tenant_id || null, file.name, key, file.type, file.size || 0).run();
   let docs = [];
   try { docs = JSON.parse(product.compliance_documents_json || '[]'); } catch {}
   docs = docs.map(d => typeof d === 'string' ? { name: d, url: '' } : d);
-  docs.push({ name: file.name, url: fileUrl });
+  docs.push({ id: docId, name: file.name, url: fileUrl });
 
   await env.DB.prepare(
     "UPDATE products SET compliance_documents_json = ?, version = version + 1, updated_at = datetime('now') WHERE owner_token = ?"
