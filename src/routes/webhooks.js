@@ -46,7 +46,7 @@ export async function handleClerkWebhook(request, env) {
         break;
     }
   } catch (err) {
-    console.error('Webhook handler error:', type, err);
+    console.error(JSON.stringify({ level: 'error', event: 'webhook_handler_error', type, message: err?.message ?? String(err) }));
     return json({ error: 'handler_error' }, 500);
   }
 

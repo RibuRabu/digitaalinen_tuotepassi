@@ -72,7 +72,9 @@ export async function verifyClerkJWT(token, env) {
 
   const payload = parseB64Json(parts[1]);
   if (!payload) return null;
-  if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+  const now = Date.now() / 1000;
+  if (payload.exp && now > payload.exp) return null;
+  if (payload.nbf && now < payload.nbf) return null;
 
   return payload;
 }
