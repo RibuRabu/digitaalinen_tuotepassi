@@ -183,9 +183,22 @@ function renderAll(app, p) {
     return formField(k, l, t, p[k], hints[k]);
   }).join('');
 
-  const listFieldsHtml = LIST_FIELDS.map(([k, jk, l]) =>
-    formField(k, `${l} (pilkulla eroteltuna)`, 'input', parseList(p[jk]).join(', '))
-  ).join('');
+  const listPlaceholders = {
+    materials:              'esim. 100% puuvilla, polyesteri, kierrätetty nailon',
+    substances:             'esim. ei sisällä SVHC-aineita, ei formaldehydiä',
+    safety_notes:           'esim. Pidä poissa lasten ulottuvilta, Ei sovi alle 3-vuotiaille',
+    care_instructions:      'esim. Pese 30°C, Älä kuivaa rumpukuivaimessa, Silitä matalalla lämmöllä',
+    repair_instructions:    'esim. Vie valtuutettuun korjaamoon, Varaosat saatavilla valmistajalta',
+    recycling_instructions: 'esim. Vie tekstiilinkeräykseen, Poista metalliset osat ennen kierrätystä',
+  };
+  const listFieldsHtml = LIST_FIELDS.map(([k, jk, l]) => {
+    const val = parseList(p[jk]).join(', ');
+    const el = document.createElement('div');
+    el.className = 'form-field';
+    el.innerHTML = `<label class="form-lbl" for="${k}">${esc(l)} <span style="font-weight:400;color:var(--c-text-3)">(pilkulla eroteltuna)</span></label>`
+      + `<input class="form-input" id="${k}" name="${k}" value="${esc(val)}" placeholder="${esc(listPlaceholders[k] || '')}">`;
+    return el.outerHTML;
+  }).join('');
 
   const docsHtml = docs.length
     ? docs.map(d => `<div class="doc-item" data-doc-id="${esc(d.id || '')}">
