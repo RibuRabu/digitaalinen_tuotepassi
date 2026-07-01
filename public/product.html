@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tuotepassi</title>
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Digitaalinen tuotepassi">
+<meta property="og:description" content="EU:n digitaalinen tuotepassi — materiaalit, hoito-ohjeet ja kierrätystieto.">
+<meta property="og:site_name" content="Digitaalinen tuotepassi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Digitaalinen tuotepassi">
+<meta name="twitter:description" content="EU:n digitaalinen tuotepassi — materiaalit, hoito-ohjeet ja kierrätystieto.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
@@ -23,6 +31,12 @@
   <p class="msg msg--mute">Ladataan...</p>
 </div>
 <script>
+function setMeta(property, content) {
+  const el = document.querySelector(`meta[property="${property}"]`) ||
+             document.querySelector(`meta[name="${property}"]`);
+  if (el) el.setAttribute('content', content);
+}
+
 async function main() {
   const match = location.pathname.match(/^\/p\/([^/]+)\/?$/);
   const slug = match ? match[1] : '';
@@ -36,7 +50,17 @@ async function main() {
   catch { app.innerHTML = '<p class="msg msg--err">Virhe yhteydessä.</p>'; return; }
   if (!res.ok) { app.innerHTML = '<p class="msg msg--err">Tuotetta ei löytynyt.</p>'; return; }
   const p = await res.json();
-  document.title = (p.product_name || 'Tuotepassi') + ' – Digitaalinen tuotepassi';
+  const pageTitle = (p.product_name || 'Tuotepassi') + ' – Digitaalinen tuotepassi';
+  const pageDesc = [
+    p.brand_name, p.product_name,
+    'EU:n digitaalinen tuotepassi — materiaalit, hoito-ohjeet ja kierrätystieto.'
+  ].filter(Boolean).join(' · ');
+  document.title = pageTitle;
+  setMeta('og:title', pageTitle);
+  setMeta('og:description', pageDesc);
+  setMeta('twitter:title', pageTitle);
+  setMeta('twitter:description', pageDesc);
+  setMeta('og:url', location.href);
   render(app, p);
 }
 
