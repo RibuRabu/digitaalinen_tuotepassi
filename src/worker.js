@@ -26,7 +26,7 @@ function withCors(response, request, env) {
   const r = new Response(response.body, response);
   r.headers.set('Access-Control-Allow-Origin', origin);
   r.headers.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  r.headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  r.headers.set('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Organization-Id');
   r.headers.set('Access-Control-Allow-Credentials', 'true');
   r.headers.set('Access-Control-Max-Age', '86400');
   return r;
