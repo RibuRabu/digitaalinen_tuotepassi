@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Digitaalinen tuotepassi – EU-vaatimustenmukaisuus helposti</title>
+<meta name="description" content="EU:n ESPR-asetus vaatii digitaalisen tuotepassin tekstiileille, elektroniikalle ja huonekaluille. Luo passi viidessä minuutissa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+/* Landing page styles — extends base design tokens */
+
+body { background: var(--c-bg); min-height: 100vh; }
+body::before { display: none; } /* remove accent stripe */
+.page { animation: none; max-width: none; padding: 0; margin: 0; }
+
+/* Nav */
+.lp-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(244,246,248,.93);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--c-border);
+}
+.lp-nav-inner {
+  max-width: 1080px; margin: 0 auto;
+  padding: var(--sp-3) var(--sp-6);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4);
+}
+.lp-logo {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--fw-semibold);
+  color: var(--c-text-1);
+  display: flex; align-items: center; gap: var(--sp-2);
+  text-decoration: none;
+}
+.lp-logo:hover { text-decoration: none; }
+.lp-logo-dot { width: 7px; height: 7px; background: var(--c-accent); border-radius: 50%; flex-shrink: 0; }
+.lp-nav-links { display: flex; align-items: center; gap: var(--sp-5); }
+.lp-nav-links a { font-size: var(--text-sm); color: var(--c-text-2); }
+.lp-nav-links a:hover { color: var(--c-text-1); text-decoration: none; }
+
+/* Container */
+.lp-c { max-width: 1080px; margin: 0 auto; padding: 0 var(--sp-6); }
+
+/* Hero */
+.lp-hero { padding: var(--sp-12) 0 var(--sp-10); text-align: center; }
+.lp-hero-badge {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c-accent); background: var(--c-accent-dim);
+  border: 1px solid var(--c-accent-ring);
+  padding: .25rem .75rem; border-radius: 999px; margin-bottom: var(--sp-6);
+}
+.lp-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: var(--fw-semibold);
+  line-height: 1.15; letter-spacing: -.02em;
+  color: var(--c-text-1);
+  margin: 0 auto var(--sp-5); max-width: 680px;
+}
+.lp-hero-sub {
+  font-size: var(--text-lg); color: var(--c-text-2);
+  line-height: 1.65; max-width: 540px; margin: 0 auto var(--sp-8);
+}
+.lp-hero-cta {
+  display: flex; gap: var(--sp-3); justify-content: center;
+  flex-wrap: wrap; margin-bottom: var(--sp-4);
+}
+.lp-hero-cta .btn { font-size: var(--text-base); padding: .7rem 1.5rem; }
+.lp-nocc { font-size: var(--text-xs); color: var(--c-text-3); font-family: var(--font-mono); }
+
+/* Trust bar */
+.lp-trust {
+  padding: var(--sp-5) 0;
+  border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface-1);
+}
+.lp-trust-inner {
+  display: flex; align-items: center; gap: var(--sp-5);
+  flex-wrap: wrap; justify-content: center;
+}
+.lp-trust-lbl {
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  color: var(--c-text-3); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+}
+.lp-trust-tags { display: flex; gap: var(--sp-2); flex-wrap: wrap; justify-content: center; }
+.lp-tag {
+  font-family: var(--font-mono); font-size: var(--text-xs);
+  color: var(--c-text-2); background: var(--c-surface-2);
+  border: 1px solid var(--c-border); padding: .2rem .6rem; border-radius: var(--r-sm);
+}
+
+/* Sections */
+.lp-section { padding: var(--sp-12) 0; }
+.lp-section--alt { background: var(--c-surface-1); border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border); }
+.lp-section--grey { background: var(--c-surface-2); border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border); }
+.lp-section-head { text-align: center; margin-bottom: var(--sp-10); }
+.lp-section-head h2 {
+  font-family: var(--font-display); font-size: var(--text-2xl);
+  font-weight: var(--fw-semibold); color: var(--c-text-1); margin-bottom: var(--sp-3);
+}
+.lp-section-head p { font-size: var(--text-base); color: var(--c-text-2); max-width: 480px; margin: 0 auto; }
+
+/* Category grid */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--sp-3);
+}
+.cat-card {
+  background: var(--c-surface-1); border: 1px solid var(--c-border);
+  border-radius: var(--r-lg); padding: var(--sp-5) var(--sp-4);
+  text-align: center; transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.cat-card:hover { border-color: var(--c-accent-ring); box-shadow: 0 0 0 3px var(--c-accent-dim); }
+.cat-icon { font-size: 1.75rem; margin-bottom: var(--sp-2); display: block; }
+.cat-name { font-weight: var(--fw-semibold); font-size: var(--text-sm); color: var(--c-text-1); display: block; margin-bottom: var(--sp-1); }
+.cat-deadline { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-text-3); }
+
+/* Steps */
+.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-6); }
+.step { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: var(--sp-6); }
+.step-num {
+  width: 30px; height: 30px; background: var(--c-accent); color: #fff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: var(--text-sm); font-weight: var(--fw-semibold);
+  margin-bottom: var(--sp-4);
+}
+.step h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: var(--fw-semibold); color: var(--c-text-1); margin-bottom: var(--sp-2); }
+.step p { font-size: var(--text-sm); color: var(--c-text-2); line-height: 1.65; }
+.step-time { margin-top: var(--sp-3); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-accent); }
+
+/* Compliance rules grid */
+.rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--sp-3); margin-top: var(--sp-6); }
+.rule-card { background: var(--c-surface-1); border: 1px solid var(--c-border); border-radius: var(--r); padding: var(--sp-4); }
+.rule-name { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-accent); font-weight: var(--fw-medium); margin-bottom: var(--sp-1); }
+.rule-desc { font-size: var(--text-xs); color: var(--c-text-3); line-height: 1.5; }
+
+/* Pricing */
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-4); max-width: 900px; margin: 0 auto; }
+.pricing-card {
+  background: var(--c-bg); border: 1px solid var(--c-border);
+  border-radius: var(--r-lg); padding: var(--sp-8) var(--sp-6);
+  display: flex; flex-direction: column; position: relative;
+}
+.pricing-card--featured { border-color: var(--c-accent); background: var(--c-surface-1); box-shadow: 0 0 0 1px var(--c-accent); }
+.pricing-badge {
+  position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+  background: var(--c-accent); color: #fff;
+  font-family: var(--font-mono); font-size: var(--text-xs); font-weight: var(--fw-medium);
+  letter-spacing: .06em; text-transform: uppercase;
+  padding: .2rem .75rem; border-radius: 0 0 var(--r) var(--r);
+  white-space: nowrap;
+}
+.pricing-name { font-family: var(--font-display); font-size: var(--text-xl); font-weight: var(--fw-semibold); color: var(--c-text-1); margin-bottom: var(--sp-2); }
+.pricing-amount { display: flex; align-items: baseline; gap: var(--sp-1); margin-bottom: var(--sp-1); }
+.pricing-eur { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: var(--fw-semibold); color: var(--c-text-1); line-height: 1; }
+.pricing-per { font-size: var(--text-sm); color: var(--c-text-3); }
+.pricing-desc { font-size: var(--text-xs); color: var(--c-text-3); margin-bottom: var(--sp-6); font-family: var(--font-mono); }
+.pricing-features { list-style: none; padding: 0; margin-bottom: var(--sp-6); flex: 1; display: flex; flex-direction: column; gap: var(--sp-3); }
+.pricing-features li { font-size: var(--text-sm); color: var(--c-text-2); display: flex; align-items: baseline; gap: var(--sp-2); }
+.pricing-features li::before { content: '✓'; color: var(--c-ok); font-size: var(--text-xs); flex-shrink: 0; }
+.pricing-cta { display: block; text-align: center; text-decoration: none !important; }
+
+/* FAQ */
+.faq-list { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-1); }
+.faq-item { border: 1px solid var(--c-border); border-radius: var(--r); background: var(--c-surface-1); overflow: hidden; }
+.faq-q {
+  width: 100%; text-align: left; padding: var(--sp-4);
+  font-size: var(--text-sm); font-weight: var(--fw-medium); color: var(--c-text-1);
+  background: none; border: none; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; gap: var(--sp-4); line-height: 1.5;
+}
+.faq-q:hover { background: var(--c-surface-2); }
+.faq-arrow { color: var(--c-text-3); transition: transform var(--dur) var(--ease); flex-shrink: 0; font-style: normal; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { font-size: var(--text-sm); color: var(--c-text-2); line-height: 1.65; padding: 0 var(--sp-4) var(--sp-4); display: none; }
+.faq-item.open .faq-a { display: block; }
+
+/* Bottom CTA */
+.lp-cta-band { background: var(--c-accent); padding: var(--sp-12) 0; text-align: center; }
+.lp-cta-band h2 { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: var(--fw-semibold); color: #fff; margin-bottom: var(--sp-3); }
+.lp-cta-band p { color: rgba(255,255,255,.8); margin-bottom: var(--sp-6); font-size: var(--text-base); }
+.lp-cta-band .btn { background: #fff; color: var(--c-accent); border-color: #fff; font-size: var(--text-base); padding: .7rem 1.5rem; }
+.lp-cta-band .btn:hover { opacity: .9; }
+
+/* Footer */
+.lp-footer { background: var(--c-surface-1); border-top: 1px solid var(--c-border); padding: var(--sp-8) 0; }
+.lp-footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-4); }
+.lp-footer-links { display: flex; gap: var(--sp-5); flex-wrap: wrap; }
+.lp-footer-links a { font-size: var(--text-sm); color: var(--c-text-3); }
+.lp-footer-links a:hover { color: var(--c-text-2); text-decoration: none; }
+.lp-footer-copy { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-text-3); }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .lp-nav-links a:not(.btn) { display: none; }
+  .lp-c { padding: 0 var(--sp-4); }
+  .lp-hero { padding: var(--sp-8) 0; }
+  .steps-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .rules-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- Nav -->
+<nav class="lp-nav">
+  <div class="lp-nav-inner">
+    <a class="lp-logo" href="/">
+      <span class="lp-logo-dot"></span>
+      Digitaalinen tuotepassi
+    </a>
+    <div class="lp-nav-links">
+      <a href="#miten-toimii">Miten toimii</a>
+      <a href="#hinnat">Hinnat</a>
+      <a href="#ukk">UKK</a>
+      <a class="btn btn-primary signup-btn">Aloita ilmaiseksi →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="lp-hero">
+  <div class="lp-c">
+    <div class="lp-hero-badge">EU ESPR-asetus · Voimassa 2025–2028</div>
+    <h1>EU:n tuotepassi.<br>Valmis viidessä minuutissa.</h1>
+    <p class="lp-hero-sub">
+      EU vaatii digitaalisen tuotepassin tekstiileille, elektroniikalle ja huonekaluille.
+      Me teemme vaatimustenmukaisuudesta helppoa — ei koodausta, ei juristi, ei byrokratiaa.
+    </p>
+    <div class="lp-hero-cta">
+      <a class="btn btn-primary signup-btn">Aloita ilmaiseksi →</a>
+      <a href="#hinnat" class="btn btn-secondary">Katso hinnat</a>
+    </div>
+    <p class="lp-nocc">Ei luottokorttia. Ei sopimusta. Yksi passi ilmaiseksi.</p>
+  </div>
+</section>
+
+<!-- Trust bar -->
+<div class="lp-trust">
+  <div class="lp-c">
+    <div class="lp-trust-inner">
+      <span class="lp-trust-lbl">Tukee EU-asetuksia</span>
+      <div class="lp-trust-tags">
+        <span class="lp-tag">ESPR</span>
+        <span class="lp-tag">GPSR</span>
+        <span class="lp-tag">RoHS</span>
+        <span class="lp-tag">WEEE</span>
+        <span class="lp-tag">REACH</span>
+        <span class="lp-tag">EPR</span>
+        <span class="lp-tag">Tekstiiliasetus</span>
+        <span class="lp-tag">EUDR</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Categories -->
+<section class="lp-section">
+  <div class="lp-c">
+    <div class="lp-section-head">
+      <h2>Toimii kaikille tuotekategorioille</h2>
+      <p>Järjestelmä tunnistaa automaattisesti mitkä EU-asetukset sinua koskevat.</p>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <span class="cat-icon">👕</span>
+        <span class="cat-name">Tekstiilit</span>
+        <span class="cat-deadline">Velvoittava 2027</span>
+      </div>
+      <div class="cat-card">
+        <span class="cat-icon">💡</span>
+        <span class="cat-name">Elektroniikka</span>
+        <span class="cat-deadline">Velvoittava 2026</span>
+      </div>
+      <div class="cat-card">
+        <span class="cat-icon">🛋️</span>
+        <span class="cat-name">Huonekalut</span>
+        <span class="cat-deadline">Velvoittava 2028</span>
+      </div>
+      <div class="cat-card">
+        <span class="cat-icon">💍</span>
+        <span class="cat-name">Korut</span>
+        <span class="cat-deadline">REACH & GPSR</span>
+      </div>
+      <div class="cat-card">
+        <span class="cat-icon">🔋</span>
+        <span class="cat-name">Akut</span>
+        <span class="cat-deadline">Velvoittava 2025</span>
+      </div>
+      <div class="cat-card">
+        <span class="cat-icon">📦</span>
+        <span class="cat-name">Muut</span>
+        <span class="cat-deadline">Kaikki kategoriat</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="miten-toimii" class="lp-section lp-section--alt">
+  <div class="lp-c">
+    <div class="lp-section-head">
+      <h2>Kolme askelta EU-vaatimustenmukaisuuteen</h2>
+      <p>Ensimmäinen passisi on valmis alle viidessä minuutissa.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Luo tuote</h3>
+        <p>Tuotteen nimi, brändi ja kategoria. Järjestelmä tietää automaattisesti mitkä EU-säännöt sinua koskevat.</p>
+        <div class="step-time">≈ 30 sekuntia</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Täytä tiedot</h3>
+        <p>Materiaalit, valmistaja, pesuohjeet, kierrätys. Järjestelmä ohjaa sinua ja kertoo mitä EU vaatii.</p>
+        <div class="step-time">≈ 3 minuuttia</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Julkaise passi</h3>
+        <p>QR-koodi ja julkinen linkki heti käyttöön. Vaatimustenmukaisuusraportti automaattisesti.</p>
+        <div class="step-time">≈ 10 sekuntia</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Compliance engine -->
+<section class="lp-section lp-section--grey">
+  <div class="lp-c">
+    <div class="lp-section-head">
+      <h2>32 EU-säännöllä varmennettu</h2>
+      <p>Compliance-moottori tarkistaa tuotteesi automaattisesti kaikkia relevantteja EU-asetuksia vastaan.</p>
+    </div>
+    <div class="rules-grid">
+      <div class="rule-card">
+        <div class="rule-name">ESPR</div>
+        <div class="rule-desc">Ecodesign for Sustainable Products Regulation</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">GPSR</div>
+        <div class="rule-desc">General Product Safety Regulation</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">REACH</div>
+        <div class="rule-desc">Kemikaalivapaukset ja turvallisuusmerkinnät</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">RoHS</div>
+        <div class="rule-desc">Vaarallisten aineiden rajoittaminen elektroniikassa</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">WEEE</div>
+        <div class="rule-desc">Sähkö- ja elektroniikkalaitteiden kierrätys</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">EPR</div>
+        <div class="rule-desc">Extended Producer Responsibility</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">Tekstiiliasetus</div>
+        <div class="rule-desc">EU:n tekstiilikuitujen merkintävaatimukset</div>
+      </div>
+      <div class="rule-card">
+        <div class="rule-name">EUDR</div>
+        <div class="rule-desc">EU Deforestation Regulation — puun alkuperä</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section id="hinnat" class="lp-section lp-section--alt">
+  <div class="lp-c">
+    <div class="lp-section-head">
+      <h2>Selkeä hinnoittelu</h2>
+      <p>Ei piilomaksuja. Ei vuosisopimusta. Voit peruuttaa milloin tahansa.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-name">Ilmainen</div>
+        <div class="pricing-amount">
+          <span class="pricing-eur">0€</span>
+        </div>
+        <div class="pricing-desc">aina ilmainen</div>
+        <ul class="pricing-features">
+          <li>1 tuotepassi</li>
+          <li>Compliance-tarkistus</li>
+          <li>QR-koodi ja julkinen linkki</li>
+          <li>Suomenkielinen näkymä</li>
+        </ul>
+        <a class="btn btn-secondary pricing-cta signup-btn">Aloita →</a>
+      </div>
+      <div class="pricing-card pricing-card--featured">
+        <div class="pricing-badge">Suosituin</div>
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-amount">
+          <span class="pricing-eur">29€</span>
+          <span class="pricing-per">/ kk</span>
+        </div>
+        <div class="pricing-desc">kuukausimaksu, ei sopimusta</div>
+        <ul class="pricing-features">
+          <li>25 tuotepassia</li>
+          <li>Kaikki compliance-säännöt</li>
+          <li>Dokumenttien lataus</li>
+          <li>8 käännöskieltä</li>
+          <li>Muokkauslinkki tuotteelle</li>
+        </ul>
+        <a class="btn btn-primary pricing-cta signup-btn">Aloita kokeilu →</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-name">Scale</div>
+        <div class="pricing-amount">
+          <span class="pricing-eur">89€</span>
+          <span class="pricing-per">/ kk</span>
+        </div>
+        <div class="pricing-desc">kuukausimaksu, ei sopimusta</div>
+        <ul class="pricing-features">
+          <li>Rajaton määrä passeja</li>
+          <li>CSV-tuonti</li>
+          <li>API-pääsy</li>
+          <li>Yrityslogo passilla</li>
+          <li>Prioriteettituki</li>
+        </ul>
+        <a class="btn btn-secondary pricing-cta contact-btn">Ota yhteyttä →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="ukk" class="lp-section">
+  <div class="lp-c">
+    <div class="lp-section-head">
+      <h2>Usein kysytyt kysymykset</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">
+          Mitä EU:n digitaalinen tuotepassi tarkoittaa?
+          <i class="faq-arrow">▾</i>
+        </button>
+        <div class="faq-a">
+          EU:n ESPR-asetus (Ecodesign for Sustainable Products Regulation) vaatii, että tietyille tuotekategorioille luodaan digitaalinen tuotepassi. Passi sisältää tuotteen materiaali-, ympäristö- ja kierrätystiedot QR-koodin takana — kuluttajien ja viranomaisten saatavilla.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Milloin vaatimukset tulevat voimaan?
+          <i class="faq-arrow">▾</i>
+        </button>
+        <div class="faq-a">
+          Ensimmäiset vaatimukset koskevat akkuja (2025) ja elektroniikkaa (2026). Tekstiilit 2027 ja huonekalut 2028. Vaatimukset vaihtelevat kategorioittain ja tarkentuvat EU:n täytäntöönpanosäädösten myötä. Järjestelmämme seuraa aikatauluja automaattisesti.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Pitääkö minulla olla teknistä osaamista?
+          <i class="faq-arrow">▾</i>
+        </button>
+        <div class="faq-a">
+          Ei. Palvelu on suunniteltu toimimaan ilman ohjelmointitaitoja. Täytät tuotteen tiedot lomakkeelle, ja järjestelmä luo QR-koodin ja julkisen linkin automaattisesti. Ei integrointeja, ei koodausta.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Missä datani sijaitsee?
+          <i class="faq-arrow">▾</i>
+        </button>
+        <div class="faq-a">
+          Data sijaitsee Cloudflare-infrastruktuurissa Euroopassa. Lisätiedot tietosuojaselosteessa.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Voinko peruuttaa tilauksen milloin tahansa?
+          <i class="faq-arrow">▾</i>
+        </button>
+        <div class="faq-a">
+          Kyllä. Ei sitovia sopimuksia. Kuukausitilauksen voi peruuttaa milloin tahansa — laskutuskausi loppuu peruutushetkestä. Julkiset tuotepassit pysyvät näkyvissä kunnes ne erikseen poistetaan.
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">
+          Onko passi virallisesti EU:n hyväksymä?
+          <i class="faq-arrow">▾</i>
+        </button>
+        <div class="faq-a">
+          Digitaalisen tuotepassin tekniset standardit (mm. GS1 Digital Link) ovat vasta muodostumassa EU:n täytäntöönpanosäädöksissä. Ohjelmistomme seuraa virallisia asetuksia ja päivittää compliance-säännöt niiden tarkentuessa. 32 säännöllä varmennettu moottori kattaa tämänhetkiset vaatimukset.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bottom CTA -->
+<section class="lp-cta-band">
+  <div class="lp-c">
+    <h2>Aloita tänään — kestää viisi minuuttia.</h2>
+    <p>Ei luottokorttia. Ei sopimusta. Yksi passi ilmaiseksi.</p>
+    <a class="btn signup-btn">Luo ensimmäinen passisi →</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="lp-footer">
+  <div class="lp-c">
+    <div class="lp-footer-inner">
+      <div class="lp-footer-links">
+        <a href="/tietosuoja">Tietosuoja</a>
+        <a href="/kayttoehdot">Käyttöehdot</a>
+        <a class="contact-btn" href="#">Ota yhteyttä</a>
+      </div>
+      <span class="lp-footer-copy">© 2025 Digitaalinen tuotepassi</span>
+    </div>
+  </div>
+</footer>
+
+</div><!-- .page -->
+<script>
+// CONFIGURE: Vaihda tähän dashboard-sovelluksen URL (esim. "https://app.example.com")
+// Jätä tyhjäksi jos dashboard-URL ei ole vielä tiedossa.
+const SIGNUP_URL = '';
+
+// CONFIGURE: Tukisähköposti
+const CONTACT_EMAIL = '';
+
+document.querySelectorAll('.signup-btn').forEach(el => {
+  if (SIGNUP_URL) {
+    el.href = SIGNUP_URL;
+  } else {
+    el.removeAttribute('href');
+    el.style.cursor = 'not-allowed';
+    el.style.opacity = '.5';
+    el.title = 'Rekisteröityminen tulossa pian';
+  }
+});
+
+document.querySelectorAll('.contact-btn').forEach(el => {
+  if (CONTACT_EMAIL) {
+    el.href = `mailto:${CONTACT_EMAIL}`;
+  } else {
+    el.removeAttribute('href');
+  }
+});
+
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>

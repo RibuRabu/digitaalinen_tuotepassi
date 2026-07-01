@@ -8,6 +8,35 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
+<style>
+.publish-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-4); padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-lg); margin-bottom: var(--sp-6); flex-wrap: wrap;
+}
+.publish-banner--draft {
+  background: var(--c-accent-dim); border: 1px solid var(--c-accent-ring);
+}
+.publish-banner--draft p { font-size: var(--text-sm); color: var(--c-text-2); margin: 0; }
+.publish-banner--live {
+  background: var(--c-ok-dim); border: 1px solid var(--c-ok-ring);
+}
+.publish-banner--live p { font-size: var(--text-sm); color: var(--c-ok); font-weight: var(--fw-medium); margin: 0; }
+.publish-banner--live a { color: var(--c-ok); }
+.publish-banner--archived {
+  background: var(--c-neutral-dim); border: 1px solid var(--c-border);
+}
+.publish-banner--archived p { font-size: var(--text-sm); color: var(--c-text-3); margin: 0; }
+.trans-toggle-btn {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--text-sm); color: var(--c-text-2);
+  background: none; border: 1px solid var(--c-border);
+  border-radius: var(--r); padding: .45rem .85rem;
+  cursor: pointer; margin-bottom: var(--sp-4);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.trans-toggle-btn:hover { color: var(--c-text-1); border-color: var(--c-text-2); }
+</style>
 </head>
 <body>
 <div class="page" id="app">
@@ -15,33 +44,33 @@
 </div>
 <script>
 const TEXT_FIELDS = [
-  ['product_name',                  'Tuotteen nimi',                    'input'],
-  ['brand_name',                    'Brändi',                           'input'],
-  ['manufacturer_name',             'Valmistaja',                       'input'],
-  ['manufacturer_email',            'Valmistajan sähköposti',           'input'],
-  ['manufacturer_address',          'Valmistajan osoite',               'textarea'],
-  ['responsible_operator_name',     'Vastuullinen toimija',             'input'],
-  ['responsible_operator_email',    'Vastuullisen toimijan sähköposti', 'input'],
-  ['responsible_operator_address',  'Vastuullisen toimijan osoite',     'textarea'],
-  ['product_type',                  'Tuotetyyppi',                      'input'],
-  ['sku',                           'SKU',                              'input'],
-  ['gtin',                          'GTIN',                             'input'],
-  ['batch_number',                  'Eränumero',                        'input'],
-  ['serial_number',                 'Sarjanumero',                      'input'],
+  ['product_name',                 'Tuotteen nimi',                    'input'],
+  ['brand_name',                   'Brändi',                           'input'],
+  ['manufacturer_name',            'Valmistaja',                       'input'],
+  ['manufacturer_email',           'Valmistajan sähköposti',           'input'],
+  ['manufacturer_address',         'Valmistajan osoite',               'textarea'],
+  ['responsible_operator_name',    'Vastuullinen toimija',             'input'],
+  ['responsible_operator_email',   'Vastuullisen toimijan sähköposti', 'input'],
+  ['responsible_operator_address', 'Vastuullisen toimijan osoite',     'textarea'],
+  ['product_type',                 'Tuotetyyppi',                      'input'],
+  ['sku',                          'SKU (sisäinen tuotekoodi)',         'input'],
+  ['gtin',                         'GTIN (viivakoodi)',                'input'],
+  ['batch_number',                 'Eränumero',                        'input'],
+  ['serial_number',                'Sarjanumero',                      'input'],
 ];
 
 const LIST_FIELDS = [
-  ['materials',            'materials_json',            'Materiaalit (pilkulla eroteltuna)'],
-  ['substances',           'substances_json',           'Huomioitavat aineet'],
-  ['safety_notes',         'safety_notes_json',         'Turvallisuustiedot'],
-  ['care_instructions',    'care_instructions_json',    'Hoito-ohjeet'],
-  ['repair_instructions',  'repair_instructions_json',  'Korjausohjeet'],
+  ['materials',             'materials_json',             'Materiaalit'],
+  ['substances',            'substances_json',            'Huomioitavat aineet'],
+  ['safety_notes',          'safety_notes_json',          'Turvallisuustiedot'],
+  ['care_instructions',     'care_instructions_json',     'Hoito-ohjeet'],
+  ['repair_instructions',   'repair_instructions_json',   'Korjausohjeet'],
   ['recycling_instructions','recycling_instructions_json','Kierrätysohjeet'],
 ];
 
-const TRANS_LANGS  = [['en','English'],['sv','Svenska'],['de','Deutsch'],['fr','Français'],['et','Eesti'],['lv','Latviešu'],['lt','Lietuvių'],['pl','Polski']];
-const TRANS_TEXT   = [['product_name','Tuotteen nimi'],['brand_name','Brändi'],['product_type','Tuotetyyppi']];
-const TRANS_LISTS  = [['materials','Materiaalit'],['care_instructions','Hoito-ohjeet'],['repair_instructions','Korjausohjeet'],['recycling_instructions','Kierrätysohjeet'],['safety_notes','Turvallisuustiedot']];
+const TRANS_LANGS = [['en','English'],['sv','Svenska'],['de','Deutsch'],['fr','Français'],['et','Eesti'],['lv','Latviešu'],['lt','Lietuvių'],['pl','Polski']];
+const TRANS_TEXT  = [['product_name','Tuotteen nimi'],['brand_name','Brändi'],['product_type','Tuotetyyppi']];
+const TRANS_LISTS = [['materials','Materiaalit'],['care_instructions','Hoito-ohjeet'],['repair_instructions','Korjausohjeet'],['recycling_instructions','Kierrätysohjeet'],['safety_notes','Turvallisuustiedot']];
 
 let currentToken = '';
 let allTranslations = {};
@@ -93,12 +122,13 @@ function monoRow(lbl, val, copy) {
   </div>`;
 }
 
-function formField(key, label, type, value) {
+function formField(key, label, type, value, hint) {
   const v = esc(value ?? '');
   const input = type === 'textarea'
     ? `<textarea class="form-textarea" id="${key}" name="${key}">${v}</textarea>`
     : `<input class="form-input" id="${key}" name="${key}" value="${v}">`;
-  return `<div class="form-field"><label class="form-lbl" for="${key}">${esc(label)}</label>${input}</div>`;
+  const hintHtml = hint ? `<p class="form-hint">${esc(hint)}</p>` : '';
+  return `<div class="form-field"><label class="form-lbl" for="${key}">${esc(label)}</label>${input}${hintHtml}</div>`;
 }
 
 async function main() {
@@ -119,7 +149,16 @@ function renderAll(app, p) {
   const publicUrl = `${location.origin}/p/${encodeURIComponent(p.public_slug)}`;
   const docs = parseDocs(p.compliance_documents_json);
 
-  const textFieldsHtml = TEXT_FIELDS.map(([k, l, t]) => formField(k, l, t, p[k])).join('');
+  const textFieldsHtml = TEXT_FIELDS.map(([k, l, t]) => {
+    const hints = {
+      gtin: 'Löydät tämän tuotteen viivakoodista. Jätä tyhjäksi jos GTIN ei ole käytössä.',
+      sku: 'Sisäinen tuotetunnus omaan järjestelmääsi. Ei näy julkisella passilla.',
+      batch_number: 'Täytä jos tuotteeseesi liittyy erä- tai tuotantoeränumero.',
+      serial_number: 'Täytä jos jokaisella tuotteella on oma sarjanumero.',
+    };
+    return formField(k, l, t, p[k], hints[k]);
+  }).join('');
+
   const listFieldsHtml = LIST_FIELDS.map(([k, jk, l]) =>
     formField(k, `${l} (pilkulla eroteltuna)`, 'input', parseList(p[jk]).join(', '))
   ).join('');
@@ -139,6 +178,20 @@ function renderAll(app, p) {
     `<div class="form-field"><label class="form-lbl" for="tr_${k}">${esc(l)} (yksi per rivi)</label><textarea class="form-textarea" id="tr_${k}" style="min-height:3.5rem"></textarea></div>`
   ).join('');
 
+  // Publish banner: shows context-sensitive action at the top
+  const publishBannerHtml = p.status === 'draft'
+    ? `<div class="publish-banner publish-banner--draft">
+        <p>Passisi on <strong>luonnos</strong> — ei vielä julkinen. Täytä tiedot ja julkaise kun olet valmis.</p>
+        <button type="button" class="btn btn-primary" id="publish-btn">Julkaise passi →</button>
+      </div>`
+    : p.status === 'active'
+    ? `<div class="publish-banner publish-banner--live">
+        <p>✓ Passi on <strong>julkinen</strong> — <a href="${esc(publicUrl)}" target="_blank" rel="noopener">avaa julkinen näkymä ↗</a></p>
+      </div>`
+    : `<div class="publish-banner publish-banner--archived">
+        <p>Passi on arkistoitu — ei julkinen.</p>
+      </div>`;
+
   app.innerHTML = `
     <div class="sys-header">
       <div>
@@ -147,35 +200,36 @@ function renderAll(app, p) {
       </div>
       <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
         ${pillHtml(p.status)}
-        <span class="sys-sub">v${esc(p.version)}</span>
-        <a href="${esc(publicUrl)}" target="_blank" class="btn btn-ghost" style="font-size:.8rem">Julkinen ↗</a>
+        <span class="sys-sub">v${esc(String(p.version))}</span>
       </div>
     </div>
 
+    ${publishBannerHtml}
+
     <div class="section">
-      <div class="section-head">Tunnisteet</div>
-      ${monoRow('public_slug',  p.public_slug,  true)}
-      ${monoRow('product_uid',  p.product_uid,  true)}
-      ${monoRow('passport_uid', p.passport_uid, true)}
+      <div class="section-head">Tunnisteet ja QR-koodi</div>
+      ${monoRow('Julkinen linkki', publicUrl, true)}
+      ${monoRow('Tuote-UID', p.product_uid, true)}
       <div class="qr-block">
         <canvas id="qr-canvas"></canvas>
         <div class="qr-meta">
           <span class="qr-label">${esc(publicUrl)}</span>
-          <button type="button" class="btn btn-secondary" id="qr-dl" style="margin-top:.25rem">Lataa PNG</button>
+          <button type="button" class="btn btn-secondary" id="qr-dl" style="margin-top:.25rem">Lataa QR PNG</button>
         </div>
       </div>
     </div>
 
     <form id="edit-form">
       <div class="form-section">
-        <div class="form-section-head">Tila</div>
+        <div class="form-section-head">Julkaisutila</div>
         <div class="form-field">
-          <label class="form-lbl" for="status">Julkaisutila</label>
+          <label class="form-lbl" for="status">Tila</label>
           <select class="form-select" id="status" name="status">
-            <option value="draft">Luonnos (draft)</option>
-            <option value="active">Julkaistu (active)</option>
-            <option value="archived">Arkistoitu (archived)</option>
+            <option value="draft">Luonnos</option>
+            <option value="active">Julkaistu</option>
+            <option value="archived">Arkistoitu</option>
           </select>
+          <p class="form-hint">Käytä "Julkaise passi" -nappia ylhäällä tai vaihda tila tästä.</p>
         </div>
       </div>
 
@@ -190,7 +244,7 @@ function renderAll(app, p) {
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Tallenna</button>
+        <button type="submit" class="btn btn-primary">Tallenna muutokset</button>
         <span class="msg" id="edit-msg"></span>
       </div>
     </form>
@@ -208,18 +262,21 @@ function renderAll(app, p) {
       </div>
     </div>
 
-    <div class="form-section">
-      <div class="form-section-head">Käännökset</div>
-      <div class="form-field">
-        <label class="form-lbl" for="trans-lang">Kieli</label>
-        <select class="form-select" id="trans-lang">${transLangOpts}</select>
-        <p class="form-hint">Kuluttajan selain valitsee automaattisesti oikean kielen.</p>
-      </div>
-      ${transTextHtml}
-      ${transListHtml}
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" id="save-trans-btn">Tallenna käännös</button>
-        <span class="msg" id="trans-msg"></span>
+    <button type="button" class="trans-toggle-btn" id="trans-toggle">▸ Lisää tai muokkaa käännöksiä</button>
+    <div id="trans-section" style="display:none">
+      <div class="form-section">
+        <div class="form-section-head">Käännökset</div>
+        <div class="form-field">
+          <label class="form-lbl" for="trans-lang">Kieli</label>
+          <select class="form-select" id="trans-lang">${transLangOpts}</select>
+          <p class="form-hint">Kuluttajan selain valitsee automaattisesti oikean kielen.</p>
+        </div>
+        ${transTextHtml}
+        ${transListHtml}
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="save-trans-btn">Tallenna käännös</button>
+          <span class="msg" id="trans-msg"></span>
+        </div>
       </div>
     </div>
   `;
@@ -271,6 +328,28 @@ function renderAll(app, p) {
     } catch { setMsg(msg, 'Tallennus epäonnistui.', 'err'); }
   });
 
+  // Publish button
+  const publishBtn = document.getElementById('publish-btn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', async () => {
+      publishBtn.disabled = true;
+      publishBtn.textContent = 'Julkaistaan...';
+      try {
+        const r = await fetch(`/api/owner/product/${encodeURIComponent(currentToken)}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ status: 'active' }),
+        });
+        if (!r.ok) throw new Error();
+        location.reload();
+      } catch {
+        publishBtn.disabled = false;
+        publishBtn.textContent = 'Julkaise passi →';
+        setMsg(document.getElementById('edit-msg'), 'Julkaisu epäonnistui.', 'err');
+      }
+    });
+  }
+
   // Document upload
   document.getElementById('doc-upload-btn').addEventListener('click', async () => {
     const fi = document.getElementById('doc-file');
@@ -315,6 +394,15 @@ function renderAll(app, p) {
       const u = await r.json();
       setMsg(msg, `Tallennettu — versio ${u.version}`, 'ok');
     } catch { setMsg(msg, 'Tallennus epäonnistui.', 'err'); }
+  });
+
+  // Translation section toggle
+  document.getElementById('trans-toggle').addEventListener('click', () => {
+    const section = document.getElementById('trans-section');
+    const btn = document.getElementById('trans-toggle');
+    const isOpen = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.textContent = isOpen ? '▸ Lisää tai muokkaa käännöksiä' : '▾ Piilota käännökset';
   });
 }
 
