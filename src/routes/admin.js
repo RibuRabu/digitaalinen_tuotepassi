@@ -283,6 +283,27 @@ export async function handleAdminCreateProductForTenant(request, env, tenantId) 
   return json({ id, product_uid: productUid, public_slug: slug, owner_token: ownerToken, passport_uid: passportUid }, 201);
 }
 
+export async function handleDeleteTenant(request, env, tenantId) {
+  const admin = await requirePlatformAdmin(request, env);
+  if (!admin) return json({ error: 'unauthorized' }, 401);
+
+  const tenant = await env.DB.prepare(
+    'SELECT id FROM tenants WHERE id = ? AND deleted_at IS NULL'
+  ).bind(tenantId).first();
+  if (!tenant) return json({ error: 'not_found' }, 404);
+
+  const countRow = await env.DB.prepare(
+    'SELECT COUNT(*) as n FROM products WHERE tenant_id = ?'
+  ).bind(tenantId).first();
+  if ((countRow?.n || 0) > 0) return json({ error: 'tenant_has_products' }, 409);
+
+  await env.DB.prepare(
+    "UPDATE tenants SET deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?"
+  ).bind(tenantId).run();
+
+  return json({ ok: true });
+}
+
 export async function handleUpdateTenant(request, env, tenantId) {
   const admin = await requirePlatformAdmin(request, env);
   if (!admin) return json({ error: 'unauthorized' }, 401);

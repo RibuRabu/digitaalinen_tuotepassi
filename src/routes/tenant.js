@@ -9,7 +9,6 @@ import { verifyClerkJWT, extractBearerToken, getTenantContext } from '../auth/cl
 import { buildCreateProductColumns, buildCreateProductValues } from './admin.js';
 
 async function requireTenant(request, env) {
-  console.log('[requireTenant-enter]');
   const token = extractBearerToken(request);
   const payload = await verifyClerkJWT(token, env);
   if (!payload) return { error: 'unauthorized', status: 401 };
@@ -47,29 +46,17 @@ async function requireTenant(request, env) {
 // GET /api/tenant/self
 export async function handleGetTenantSelf(request, env) {
   const ctx = await requireTenant(request, env);
-  if (ctx.error) {
-    console.log('[tenant-self] auth error', JSON.stringify({ error: ctx.error, status: ctx.status }));
-    return json({ error: ctx.error }, ctx.status);
-  }
+  if (ctx.error) return json({ error: ctx.error }, ctx.status);
 
   const countRow = await env.DB.prepare(
     "SELECT COUNT(*) as n FROM products WHERE tenant_id = ? AND status != 'archived'"
   ).bind(ctx.tenant.id).first();
 
-  const result = { ...ctx.tenant, product_count: countRow?.n ?? 0 };
-  console.log('[tenant-self] ok', JSON.stringify({
-    tenantId: ctx.tenant.id,
-    name: ctx.tenant.name,
-    status: ctx.tenant.status,
-    product_count: result.product_count,
-  }));
-  return json(result);
+  return json({ ...ctx.tenant, product_count: countRow?.n ?? 0 });
 }
 
 // GET /api/tenant/products
 export async function handleListProducts(request, env) {
-  console.log('[products-handler-enter]', { path: request.url });
-  console.log('[before-requireTenant]');
   const ctx = await requireTenant(request, env);
   if (ctx.error) return json({ error: ctx.error }, ctx.status);
 

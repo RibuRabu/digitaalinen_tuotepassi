@@ -6,7 +6,7 @@ import {
   handleGetAdminProduct, handleCreateProduct, handleUpdateCarrier,
   handleListTenants, handleGetTenant, handleListUnclaimedProducts,
   handleAdminClaimProduct, handleUpdateTenant, handleAdminCreateProductForTenant,
-  handleAdminStats, handleListBilling, handleUpdateBilling,
+  handleAdminStats, handleListBilling, handleUpdateBilling, handleDeleteTenant,
 } from './routes/admin.js';
 import {
   handleGetTenantSelf,
@@ -49,14 +49,9 @@ export default {
       return withCors(new Response(null, { status: 204 }), request, env);
     }
 
-    console.log('[router]', JSON.stringify({ pathname, method }));
-
     let response;
 
-    // ── Debug version (no auth) ───────────────────────────────────────────────
-    if (pathname === '/api/debug/version' && method === 'GET') {
-      return withCors(json({ version: 'billing-debug-2026-07-01', hasBillingRoute: true }), request, env);
-    }
+    try {
 
     // ── Public API (no auth) ─────────────────────────────────────────────────
     if (pathname.startsWith('/api/public/product/') && method === 'GET') {
@@ -165,8 +160,9 @@ export default {
 
         if (tenantSlashIdx === -1) {
           // /api/admin/tenant/:id
-          if (method === 'GET')  response = await handleGetTenant(request, env, tenantRest);
-          if (method === 'POST') response = await handleUpdateTenant(request, env, tenantRest);
+          if (method === 'GET')    response = await handleGetTenant(request, env, tenantRest);
+          if (method === 'POST')   response = await handleUpdateTenant(request, env, tenantRest);
+          if (method === 'DELETE') response = await handleDeleteTenant(request, env, tenantRest);
         } else {
           const tenantId = tenantRest.slice(0, tenantSlashIdx);
           const afterTenant = tenantRest.slice(tenantSlashIdx + 1);
@@ -195,6 +191,11 @@ export default {
         const slug = decodeURIComponent(rest.slice('product/'.length));
         response = await handleGetAdminProduct(request, env, slug);
       }
+    }
+
+    } catch (err) {
+      console.error('[worker] unhandled error', err?.message ?? String(err));
+      response = json({ error: 'internal_error' }, 500);
     }
 
     // ── Unmatched API route ───────────────────────────────────────────────────
