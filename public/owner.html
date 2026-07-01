@@ -43,6 +43,13 @@
 .comp-list li { font-size: var(--text-sm); color: var(--c-text-2); display: flex; align-items: flex-start; gap: var(--sp-2); line-height: 1.5; }
 .comp-list li::before { content: '!'; font-family: var(--font-mono); font-size: .6rem; font-weight: bold; color: var(--c-warn); flex-shrink: 0; background: var(--c-warn-dim); border: 1px solid var(--c-warn-ring); border-radius: 50%; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; margin-top: .15rem; }
 .comp-list--warn li::before { content: '▲'; font-size: .5rem; }
+.field-eu-tag {
+  display: inline-flex; align-items: center;
+  font-family: var(--font-mono); font-size: .65rem; letter-spacing: .04em;
+  color: var(--c-warn); background: var(--c-warn-dim); border: 1px solid var(--c-warn-ring);
+  border-radius: 999px; padding: .1rem .45rem; margin-left: var(--sp-2); vertical-align: middle;
+}
+.form-field--required .form-lbl { display: flex; align-items: center; }
 </style>
 </head>
 <body>
@@ -474,6 +481,18 @@ function renderCompliancePanel(panel, c) {
         ${missingHtml}${warnHtml}
       </div>
     </div>`;
+
+  // Annotate form fields that are required by compliance rules but currently empty
+  const missingFields = new Set((c.missing || []).map(m => m.field).filter(Boolean));
+  for (const fieldKey of missingFields) {
+    const el = document.getElementById(fieldKey);
+    if (!el) continue;
+    const fieldDiv = el.closest('.form-field');
+    const lbl = fieldDiv?.querySelector('.form-lbl');
+    if (!lbl || lbl.querySelector('.field-eu-tag')) continue;
+    fieldDiv.classList.add('form-field--required');
+    lbl.insertAdjacentHTML('beforeend', '<span class="field-eu-tag">EU-vaatimus</span>');
+  }
 }
 
 main();
