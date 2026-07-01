@@ -44,6 +44,18 @@ async function requireTenant(request, env) {
   return ctx;
 }
 
+// GET /api/tenant/self
+export async function handleGetTenantSelf(request, env) {
+  const ctx = await requireTenant(request, env);
+  if (ctx.error) return json({ error: ctx.error }, ctx.status);
+
+  const countRow = await env.DB.prepare(
+    "SELECT COUNT(*) as n FROM products WHERE tenant_id = ? AND status != 'archived'"
+  ).bind(ctx.tenant.id).first();
+
+  return json({ ...ctx.tenant, product_count: countRow?.n ?? 0 });
+}
+
 // GET /api/tenant/products
 export async function handleListProducts(request, env) {
   console.log('[products-handler-enter]', { path: request.url });

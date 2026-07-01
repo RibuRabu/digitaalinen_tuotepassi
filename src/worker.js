@@ -9,6 +9,7 @@ import {
   handleAdminStats,
 } from './routes/admin.js';
 import {
+  handleGetTenantSelf,
   handleListProducts, handleCreateProduct as handleTenantCreateProduct,
   handleGetProduct, handleUpdateProduct, handleDeleteProduct,
   handleUploadDocument, handleRegenerateShareLink, handleClaimProduct,
@@ -102,7 +103,10 @@ export default {
     else if (pathname.startsWith('/api/tenant/')) {
       const rest = pathname.slice('/api/tenant/'.length);
 
-      if (rest === 'products' && method === 'GET') {
+      if (rest === 'self' && method === 'GET') {
+        response = await handleGetTenantSelf(request, env);
+      }
+      else if (rest === 'products' && method === 'GET') {
         response = await handleListProducts(request, env);
       }
       else if (rest === 'product' && method === 'POST') {
