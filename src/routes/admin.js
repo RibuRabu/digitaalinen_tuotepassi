@@ -312,3 +312,76 @@ export async function handleUpdateTenant(request, env, tenantId) {
 
   return json({ ok: true });
 }
+
+const BILLING_ROW_SQL = `
+  SELECT t.id, t.name, t.plan, t.status as tenant_status, t.billing_status,
+         COALESCE(b.billing_period, 'monthly') as billing_period,
+         COALESCE(b.price_eur, 0) as price_eur,
+         COALESCE(b.vat_rate, 25) as vat_rate,
+         b.next_invoice_date, b.last_invoice_date,
+         b.holvi_invoice_number, b.notes, b.updated_at
+  FROM tenants t
+  LEFT JOIN tenant_billing b ON b.tenant_id = t.id
+`;
+
+export async function handleListBilling(request, env) {
+  const admin = await requirePlatformAdmin(request, env);
+  if (!admin) return json({ error: 'unauthorized' }, 401);
+
+  const { results } = await env.DB.prepare(
+    `${BILLING_ROW_SQL} WHERE t.deleted_at IS NULL ORDER BY t.created_at DESC`
+  ).all();
+
+  return json({ rows: results });
+}
+
+export async function handleUpdateBilling(request, env, tenantId) {
+  const admin = await requirePlatformAdmin(request, env);
+  if (!admin) return json({ error: 'unauthorized' }, 401);
+
+  const tenant = await env.DB.prepare(
+    'SELECT id FROM tenants WHERE id = ? AND deleted_at IS NULL'
+  ).bind(tenantId).first();
+  if (!tenant) return json({ error: 'not_found' }, 404);
+
+  let body;
+  try { body = await request.json(); }
+  catch { return json({ error: 'invalid_json' }, 400); }
+
+  const VALID_BILLING_STATUS = ['not_due', 'due_now', 'overdue', 'invoiced', 'paid'];
+  const VALID_BILLING_PERIOD = ['monthly', 'annual', 'one_time'];
+  const BILLING_TABLE_COLS = ['billing_period', 'price_eur', 'vat_rate', 'next_invoice_date',
+                               'last_invoice_date', 'holvi_invoice_number', 'notes'];
+
+  if ('billing_status' in body) {
+    if (!VALID_BILLING_STATUS.includes(body.billing_status))
+      return json({ error: 'invalid_billing_status' }, 400);
+    await env.DB.prepare(
+      "UPDATE tenants SET billing_status = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(body.billing_status, tenantId).run();
+  }
+
+  const billingUpdates = {};
+  for (const col of BILLING_TABLE_COLS) {
+    if (col in body) billingUpdates[col] = body[col] ?? null;
+  }
+  if ('billing_period' in billingUpdates && !VALID_BILLING_PERIOD.includes(billingUpdates.billing_period))
+    return json({ error: 'invalid_billing_period' }, 400);
+
+  if (Object.keys(billingUpdates).length > 0) {
+    const cols = Object.keys(billingUpdates);
+    await env.DB.prepare(
+      `INSERT INTO tenant_billing (tenant_id, ${cols.join(', ')}, updated_at)
+       VALUES (?, ${cols.map(() => '?').join(', ')}, datetime('now'))
+       ON CONFLICT(tenant_id) DO UPDATE SET
+         ${cols.map(c => `${c} = excluded.${c}`).join(', ')},
+         updated_at = excluded.updated_at`
+    ).bind(tenantId, ...Object.values(billingUpdates)).run();
+  }
+
+  const row = await env.DB.prepare(
+    `${BILLING_ROW_SQL} WHERE t.id = ?`
+  ).bind(tenantId).first();
+
+  return json(row);
+}

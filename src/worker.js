@@ -6,7 +6,7 @@ import {
   handleGetAdminProduct, handleCreateProduct, handleUpdateCarrier,
   handleListTenants, handleGetTenant, handleListUnclaimedProducts,
   handleAdminClaimProduct, handleUpdateTenant, handleAdminCreateProductForTenant,
-  handleAdminStats,
+  handleAdminStats, handleListBilling, handleUpdateBilling,
 } from './routes/admin.js';
 import {
   handleGetTenantSelf,
@@ -143,6 +143,9 @@ export default {
       if (rest === 'stats' && method === 'GET') {
         response = await handleAdminStats(request, env);
       }
+      else if (rest === 'billing' && method === 'GET') {
+        response = await handleListBilling(request, env);
+      }
       else if (rest === 'tenants' && method === 'GET') {
         response = await handleListTenants(request, env);
       }
@@ -160,7 +163,10 @@ export default {
         } else {
           const tenantId = tenantRest.slice(0, tenantSlashIdx);
           const afterTenant = tenantRest.slice(tenantSlashIdx + 1);
-          if (afterTenant === 'product' && method === 'POST') {
+          if (afterTenant === 'billing' && method === 'POST') {
+            response = await handleUpdateBilling(request, env, tenantId);
+          }
+          else if (afterTenant === 'product' && method === 'POST') {
             response = await handleAdminCreateProductForTenant(request, env, tenantId);
           }
           else if (afterTenant.startsWith('product/') && afterTenant.endsWith('/claim') && method === 'POST') {
