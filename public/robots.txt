@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /tietosuoja
+Allow: /kayttoehdot
+
+Disallow: /api/
+Disallow: /owner/
+Disallow: /p/
+
+Sitemap: https://digitaalinentuotepassi.fi/sitemap.xml
