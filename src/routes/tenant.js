@@ -47,13 +47,23 @@ async function requireTenant(request, env) {
 // GET /api/tenant/self
 export async function handleGetTenantSelf(request, env) {
   const ctx = await requireTenant(request, env);
-  if (ctx.error) return json({ error: ctx.error }, ctx.status);
+  if (ctx.error) {
+    console.log('[tenant-self] auth error', JSON.stringify({ error: ctx.error, status: ctx.status }));
+    return json({ error: ctx.error }, ctx.status);
+  }
 
   const countRow = await env.DB.prepare(
     "SELECT COUNT(*) as n FROM products WHERE tenant_id = ? AND status != 'archived'"
   ).bind(ctx.tenant.id).first();
 
-  return json({ ...ctx.tenant, product_count: countRow?.n ?? 0 });
+  const result = { ...ctx.tenant, product_count: countRow?.n ?? 0 };
+  console.log('[tenant-self] ok', JSON.stringify({
+    tenantId: ctx.tenant.id,
+    name: ctx.tenant.name,
+    status: ctx.tenant.status,
+    product_count: result.product_count,
+  }));
+  return json(result);
 }
 
 // GET /api/tenant/products
