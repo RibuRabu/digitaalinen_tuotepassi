@@ -216,7 +216,14 @@ export default {
     }
 
     } catch (err) {
-      console.error('[worker] unhandled error', err?.message ?? String(err));
+      console.error(JSON.stringify({
+        level: 'error',
+        event: 'unhandled_exception',
+        method,
+        pathname,
+        message: err?.message ?? String(err),
+        stack: err?.stack?.split('\n').slice(0, 5).join(' | ') ?? null,
+      }));
       response = json({ error: 'internal_error' }, 500);
     }
 
