@@ -134,11 +134,12 @@ function render(app, p) {
   const opAddr   = p.responsible_operator_address || '';
   const prodType = tv(p, tr, 'product_type') || p.product_type || '';
 
-  const materials = tlist(p, tr, 'materials_json',              'materials');
-  const care      = tlist(p, tr, 'care_instructions_json',      'care_instructions');
-  const repair    = tlist(p, tr, 'repair_instructions_json',    'repair_instructions');
-  const recycling = tlist(p, tr, 'recycling_instructions_json', 'recycling_instructions');
-  const safety    = tlist(p, tr, 'safety_notes_json',           'safety_notes');
+  const materials   = tlist(p, tr, 'materials_json',              'materials');
+  const substances  = parseList(p.substances_json);
+  const care        = tlist(p, tr, 'care_instructions_json',      'care_instructions');
+  const repair      = tlist(p, tr, 'repair_instructions_json',    'repair_instructions');
+  const recycling   = tlist(p, tr, 'recycling_instructions_json', 'recycling_instructions');
+  const safety      = tlist(p, tr, 'safety_notes_json',           'safety_notes');
 
   const mfrSection = (mfrName || mfrMail || mfrAddr)
     ? section('Valmistaja',
@@ -171,6 +172,7 @@ function render(app, p) {
     ${mfrSection}
     ${opSection}
     ${listSection('Materiaalit', materials)}
+    ${listSection('Kemialliset aineet', substances)}
     ${listSection('Hoito-ohjeet', care)}
     ${listSection('Korjausohjeet', repair)}
     ${listSection('Kierrätysohjeet', recycling)}
