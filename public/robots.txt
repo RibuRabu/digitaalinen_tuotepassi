@@ -8,4 +8,4 @@ Disallow: /api/
 Disallow: /owner/
 Disallow: /p/
 
-Sitemap: https://digitaalinentuotepassi.fi/sitemap.xml
+Sitemap: https://digitaalinentuotepassi.tulkintatila.fi/sitemap.xml
