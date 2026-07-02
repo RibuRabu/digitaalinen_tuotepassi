@@ -49,8 +49,8 @@ body::before { display: none; } /* remove accent stripe */
 .lp-logo:hover { text-decoration: none; }
 .lp-logo-dot { width: 7px; height: 7px; background: var(--c-accent); border-radius: 50%; flex-shrink: 0; }
 .lp-nav-links { display: flex; align-items: center; gap: var(--sp-5); }
-.lp-nav-links a { font-size: var(--text-sm); color: var(--c-text-2); }
-.lp-nav-links a:hover { color: var(--c-text-1); text-decoration: none; }
+.lp-nav-links a:not(.btn) { font-size: var(--text-sm); color: var(--c-text-2); }
+.lp-nav-links a:not(.btn):hover { color: var(--c-text-1); text-decoration: none; }
 
 /* Container */
 .lp-c { max-width: 1080px; margin: 0 auto; padding: 0 var(--sp-6); }
