@@ -42,6 +42,21 @@ function withSecurityHeaders(response) {
   return r;
 }
 
+// Reitti A: vanity-URL (esim. /sign-up) → 302 Clerkin hosted-osoitteeseen.
+// Jos env-muuttuja puuttuu, palautetaan selkeä konfiguraatiovirhe (ei 404).
+function authRedirect(target, varName, requestUrl) {
+  if (!target) {
+    console.error(JSON.stringify({
+      level: 'error',
+      event: 'auth_redirect_misconfigured',
+      pathname: requestUrl.pathname,
+      missing_env: varName,
+    }));
+    return json({ error: 'auth_redirect_not_configured', missing: varName }, 500);
+  }
+  return Response.redirect(target, 302);
+}
+
 function withCors(response, request, env) {
   const origin = env.CORS_ORIGIN || request.headers.get('Origin') || '*';
   const r = new Response(response.body, response);
@@ -58,6 +73,16 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const method = request.method;
+
+    // ── Auth redirects (Reitti A: vanity URL → Clerk hosted) ─────────────────
+    // Tämä Worker omistaa hostin, joten /sign-up ja /sign-in ohjataan Clerkiin
+    // ennen ASSETS-fallthroughia (muuten ne palauttaisivat custom 404:n).
+    if (method === 'GET' && (pathname === '/sign-up' || pathname === '/sign-up/')) {
+      return authRedirect(env.SIGNUP_REDIRECT_URL, 'SIGNUP_REDIRECT_URL', url);
+    }
+    if (method === 'GET' && (pathname === '/sign-in' || pathname === '/sign-in/')) {
+      return authRedirect(env.SIGNIN_REDIRECT_URL, 'SIGNIN_REDIRECT_URL', url);
+    }
 
     // ── Static pages ─────────────────────────────────────────────────────────
     if (pathname.startsWith('/p/'))     return serveAsset(request, env, '/product');

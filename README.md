@@ -64,11 +64,28 @@ Vastaus sisältää `slug`, `token`, `product_uid` ja `passport_uid` -arvot. Jul
 
 ## Roadmap
 
-### UX consolidation (Reitti C) — myöhempi vaihe
+### Sign-up / sign-in (Reitti A: vanity URL → Clerk redirect)
 
-Nyt sign-up käyttää **Reitti A**:ta: `SIGNUP_URL` osoittaa Clerkin
-sign-up-sivulle (`https://digitaalinentuotepassi.tulkintatila.fi/sign-up`),
-jonka tarjoilusta vastaa Clerkin custom domain / redirect — ei tämä Worker.
+MVP-vaiheessa markkinointisivujen CTA:t osoittavat samalle domainille
+(`https://digitaalinentuotepassi.tulkintatila.fi/sign-up`), joka tuntuu
+kuluttajasta luontevalta ilman domain-hyppyä. Koska tämä Worker omistaa
+hostin, se **ohjaa** `/sign-up`- ja `/sign-in`-polut Clerkin hosted-osoitteisiin
+302-redirectillä (`src/worker.js`, ennen ASSETS-fallthroughia). Näin vanity-URL
+ei palauta custom 404:ää.
+
+Redirect-kohteet luetaan env-muuttujista — aseta ne ennen deployta:
+
+```bash
+wrangler secret put SIGNUP_REDIRECT_URL   # Clerkin hosted sign-up URL
+wrangler secret put SIGNIN_REDIRECT_URL   # Clerkin hosted sign-in URL
+```
+
+Esim. Clerkin custom domainilla `https://accounts.tulkintatila.fi/sign-up`
+ja `.../sign-in`, tai hosted `https://<slug>.accounts.dev/sign-up`. Jos
+muuttuja puuttuu, polku palauttaa selkeän `500 auth_redirect_not_configured`
+-virheen (ei 404), jotta väärä konfiguraatio huomataan heti.
+
+### UX consolidation (Reitti C) — myöhempi vaihe
 
 Myöhemmässä vaiheessa, kun konversiovolyymi perustelee lisäkompleksisuuden,
 harkitaan **polkupohjaista routingia (Reitti C)**: dashboard-sovellus
@@ -80,4 +97,5 @@ Toteutus vaatii:
 - Carve-outin tähän Workeriin, jotta catch-all fallthrough + custom 404
   (`src/worker.js`) **ei nappaa** noita polkuja ennen dashboardia.
 
-Kunnes tämä on tehty, `/sign-up`-polun tarjoilu hoidetaan Clerkin puolella.
+Kunnes tämä on tehty, `/sign-up`- ja `/sign-in`-polut hoidetaan yllä kuvatulla
+Reitti A -redirectillä.
