@@ -282,8 +282,9 @@ body::before { display: none; }
 
 </div>
 <script>
-// CONFIGURE: Vaihda tähän dashboard-sovelluksen URL
-const SIGNUP_URL = '';
+// Clerk sign-up (Reitti A). Vanity-URL markkinointidomainissa.
+// HUOM: Clerkin custom domain / redirect vastaa tämän polun tarjoilusta — ei tämä Worker.
+const SIGNUP_URL = 'https://digitaalinentuotepassi.tulkintatila.fi/sign-up';
 const CONTACT_EMAIL = '';
 
 document.querySelectorAll('.signup-btn').forEach(el => {

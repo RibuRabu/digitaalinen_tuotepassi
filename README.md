@@ -61,3 +61,23 @@ curl -X POST https://<worker-url>/api/admin/product/create \
 ```
 
 Vastaus sisältää `slug`, `token`, `product_uid` ja `passport_uid` -arvot. Julkinen sivu löytyy `/p/{slug}`-osoitteesta, omistajan muokkaussivu `/owner/{token}`-osoitteesta ja koneellisesti luettava passi `/api/passport/{product_uid}`-osoitteesta.
+
+## Roadmap
+
+### UX consolidation (Reitti C) — myöhempi vaihe
+
+Nyt sign-up käyttää **Reitti A**:ta: `SIGNUP_URL` osoittaa Clerkin
+sign-up-sivulle (`https://digitaalinentuotepassi.tulkintatila.fi/sign-up`),
+jonka tarjoilusta vastaa Clerkin custom domain / redirect — ei tämä Worker.
+
+Myöhemmässä vaiheessa, kun konversiovolyymi perustelee lisäkompleksisuuden,
+harkitaan **polkupohjaista routingia (Reitti C)**: dashboard-sovellus
+(`/sign-up`, `/sign-in`, `/dashboard/*`) tarjoillaan samalta hostilta kuin
+markkinointisivut, jolloin kuluttaja pysyy yhdellä domainilla ilman hyppyä.
+
+Toteutus vaatii:
+- Cloudflare-routen, joka ohjaa auth-/dashboard-polut erilliseen deploymentiin.
+- Carve-outin tähän Workeriin, jotta catch-all fallthrough + custom 404
+  (`src/worker.js`) **ei nappaa** noita polkuja ennen dashboardia.
+
+Kunnes tämä on tehty, `/sign-up`-polun tarjoilu hoidetaan Clerkin puolella.
