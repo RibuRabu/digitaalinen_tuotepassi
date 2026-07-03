@@ -23,6 +23,4 @@ id = "513eb65305f64255b4c4fa5ff3fc9c9b"
 # ADMIN_SECRET          — legacy admin panel auth
 # CLERK_JWKS_URL        — e.g. https://<instance>.clerk.accounts.dev/.well-known/jwks.json
 # CLERK_WEBHOOK_SECRET  — from Clerk dashboard webhook endpoint (starts with whsec_)
-# CORS_ORIGIN           — dashboard URL, e.g. https://dashboard.tulkintatila.fi
-# SIGNUP_REDIRECT_URL   — Clerk hosted sign-up URL (vanity /sign-up → 302 here)
-# SIGNIN_REDIRECT_URL   — Clerk hosted sign-in URL (vanity /sign-in → 302 here)
+# CORS_ORIGIN           — dashboard URL, e.g. https://digitaalinentuotepassi.tulkintatila.fi

@@ -62,40 +62,30 @@ curl -X POST https://<worker-url>/api/admin/product/create \
 
 Vastaus sisältää `slug`, `token`, `product_uid` ja `passport_uid` -arvot. Julkinen sivu löytyy `/p/{slug}`-osoitteesta, omistajan muokkaussivu `/owner/{token}`-osoitteesta ja koneellisesti luettava passi `/api/passport/{product_uid}`-osoitteesta.
 
-## Roadmap
+## Arkkitehtuuri ja vastuunjako
 
-### Sign-up / sign-in (Reitti A: vanity URL → Clerk redirect)
+Tuote koostuu kahdesta deploymentista, jotka jakavat vastuun näin:
 
-MVP-vaiheessa markkinointisivujen CTA:t osoittavat samalle domainille
-(`https://digitaalinentuotepassi.tulkintatila.fi/sign-up`), joka tuntuu
-kuluttajasta luontevalta ilman domain-hyppyä. Koska tämä Worker omistaa
-hostin, se **ohjaa** `/sign-up`- ja `/sign-in`-polut Clerkin hosted-osoitteisiin
-302-redirectillä (`src/worker.js`, ennen ASSETS-fallthroughia). Näin vanity-URL
-ei palauta custom 404:ää.
+```
+Vercel — dpp-dashboard (RibuRabu/dpp-dashboard)
+  digitaalinentuotepassi.tulkintatila.fi   ← DNS: CNAME vercel-dns
+    /            landing page (markkinointi)
+    /pricing     hinnoittelu
+    /sign-up     Clerk-rekisteröityminen (sovellus renderöi)
+    /sign-in     Clerk-kirjautuminen (sovellus renderöi)
+    /dashboard   tenant-käyttöliittymä
 
-Redirect-kohteet luetaan env-muuttujista — aseta ne ennen deployta:
-
-```bash
-wrangler secret put SIGNUP_REDIRECT_URL   # Clerkin hosted sign-up URL
-wrangler secret put SIGNIN_REDIRECT_URL   # Clerkin hosted sign-in URL
+Cloudflare Worker — tämä repo
+  api.digitaalinentuotepassi.tulkintatila.fi   ← Workers custom domain
+    /api/*       julkinen API, tenant-API, admin-API, webhookit
+    /p/{slug}    julkinen tuotepassisivu
+    /owner/{token}  omistajan muokkaussivu (capability-URL)
+    D1           tietokanta
+    R2           dokumenttitiedostot
+    compliance   sääntömoottori (32 EU-sääntöä)
 ```
 
-Esim. Clerkin custom domainilla `https://accounts.tulkintatila.fi/sign-up`
-ja `.../sign-in`, tai hosted `https://<slug>.accounts.dev/sign-up`. Jos
-muuttuja puuttuu, polku palauttaa selkeän `500 auth_redirect_not_configured`
--virheen (ei 404), jotta väärä konfiguraatio huomataan heti.
-
-### UX consolidation (Reitti C) — myöhempi vaihe
-
-Myöhemmässä vaiheessa, kun konversiovolyymi perustelee lisäkompleksisuuden,
-harkitaan **polkupohjaista routingia (Reitti C)**: dashboard-sovellus
-(`/sign-up`, `/sign-in`, `/dashboard/*`) tarjoillaan samalta hostilta kuin
-markkinointisivut, jolloin kuluttaja pysyy yhdellä domainilla ilman hyppyä.
-
-Toteutus vaatii:
-- Cloudflare-routen, joka ohjaa auth-/dashboard-polut erilliseen deploymentiin.
-- Carve-outin tähän Workeriin, jotta catch-all fallthrough + custom 404
-  (`src/worker.js`) **ei nappaa** noita polkuja ennen dashboardia.
-
-Kunnes tämä on tehty, `/sign-up`- ja `/sign-in`-polut hoidetaan yllä kuvatulla
-Reitti A -redirectillä.
+Huom: Worker **ei** palvele päädomainia eikä käsittele `/sign-up`- tai
+`/sign-in`-polkuja — ne kuuluvat Vercel-deploymentille. Markkinointisivut
+(`index`, `pricing`, `tietosuoja`, `kayttoehdot`) ovat siirtymässä
+dpp-dashboard-repoon; ks. commit-historia.
