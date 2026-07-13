@@ -77,23 +77,41 @@ async function handleOrgDeleted(env, data) {
   ).bind(data.id).run();
 }
 
+// Resolve the local tenant for a membership event. Logs (without PII beyond the
+// Clerk org id) when the tenant is missing so dropped events are observable rather
+// than silently lost — a likely contributor to empty tenant_users in production.
+async function tenantForMembership(env, clerkOrgId, eventType) {
+  const tenant = await env.DB.prepare(
+    'SELECT id FROM tenants WHERE clerk_org_id = ?'
+  ).bind(clerkOrgId).first();
+  if (!tenant) {
+    console.warn(JSON.stringify({
+      level: 'warn', event: 'membership_event_dropped',
+      reason: 'tenant_not_found', type: eventType, clerkOrgId,
+    }));
+  }
+  return tenant;
+}
+
+// Idempotent upsert of a membership. Used by both created and updated so a missed
+// created event self-heals on the next updated event.
+async function upsertMembership(env, tenantId, clerkUserId, role) {
+  await env.DB.prepare(
+    `INSERT INTO tenant_users (id, tenant_id, clerk_user_id, role)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(tenant_id, clerk_user_id) DO UPDATE SET role = excluded.role`
+  ).bind(newId(), tenantId, clerkUserId, role).run();
+}
+
 async function handleMembershipCreated(env, data) {
   const clerkOrgId = data.organization?.id;
   const clerkUserId = data.public_user_data?.user_id;
   if (!clerkOrgId || !clerkUserId) return;
 
-  const tenant = await env.DB.prepare(
-    'SELECT id FROM tenants WHERE clerk_org_id = ?'
-  ).bind(clerkOrgId).first();
-  if (!tenant) return; // Org not yet registered — webhook ordering issue
+  const tenant = await tenantForMembership(env, clerkOrgId, 'organizationMembership.created');
+  if (!tenant) return;
 
-  const role = clerkRoleToLocal(data.role);
-
-  await env.DB.prepare(
-    `INSERT INTO tenant_users (id, tenant_id, clerk_user_id, role)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT(tenant_id, clerk_user_id) DO UPDATE SET role = excluded.role`
-  ).bind(newId(), tenant.id, clerkUserId, role).run();
+  await upsertMembership(env, tenant.id, clerkUserId, clerkRoleToLocal(data.role));
 }
 
 async function handleMembershipUpdated(env, data) {
@@ -101,15 +119,11 @@ async function handleMembershipUpdated(env, data) {
   const clerkUserId = data.public_user_data?.user_id;
   if (!clerkOrgId || !clerkUserId) return;
 
-  const tenant = await env.DB.prepare(
-    'SELECT id FROM tenants WHERE clerk_org_id = ?'
-  ).bind(clerkOrgId).first();
+  const tenant = await tenantForMembership(env, clerkOrgId, 'organizationMembership.updated');
   if (!tenant) return;
 
-  const role = clerkRoleToLocal(data.role);
-  await env.DB.prepare(
-    'UPDATE tenant_users SET role = ? WHERE tenant_id = ? AND clerk_user_id = ?'
-  ).bind(role, tenant.id, clerkUserId).run();
+  // Upsert rather than bare UPDATE: if the created event was missed, this heals it.
+  await upsertMembership(env, tenant.id, clerkUserId, clerkRoleToLocal(data.role));
 }
 
 async function handleMembershipDeleted(env, data) {
@@ -117,9 +131,7 @@ async function handleMembershipDeleted(env, data) {
   const clerkUserId = data.public_user_data?.user_id;
   if (!clerkOrgId || !clerkUserId) return;
 
-  const tenant = await env.DB.prepare(
-    'SELECT id FROM tenants WHERE clerk_org_id = ?'
-  ).bind(clerkOrgId).first();
+  const tenant = await tenantForMembership(env, clerkOrgId, 'organizationMembership.deleted');
   if (!tenant) return;
 
   await env.DB.prepare(

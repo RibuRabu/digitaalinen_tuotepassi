@@ -84,9 +84,21 @@ export function extractBearerToken(request) {
   return auth.startsWith('Bearer ') ? auth.slice(7) : null;
 }
 
+// Resolves and authorizes tenant access for an authenticated user.
 // Returns { tenant, userId, orgRole } on success, { error, status } on blocked, or null on not-found.
+//
+// Authorization requires ALL of:
+//   1. a resolved org_id on the payload (caller supplies it; see requireTenant)
+//   2. a payload.sub identifying the authenticated user
+//   3. an existing, non-deleted tenant for that clerk_org_id
+//   4. an allowed tenant status (trial | active)
+//   5. an active membership of payload.sub in that tenant (tenant_users row)
+//
+// Membership (5) is what makes the X-Organization-Id selection hint safe: the
+// org id is only ever honoured for a user who is actually a member of it.
 export async function getTenantContext(payload, env) {
   if (!payload?.org_id) return null;
+  if (!payload?.sub) return null;
 
   const tenant = await env.DB.prepare(
     'SELECT * FROM tenants WHERE clerk_org_id = ? AND deleted_at IS NULL'
@@ -94,9 +106,21 @@ export async function getTenantContext(payload, env) {
 
   if (!tenant) return null;
 
-  // trial and active are allowed; all other statuses are blocked — return specific error
+  // trial and active are allowed; all other statuses are blocked — return specific error.
+  // Checked before membership so a real member of a suspended tenant gets the precise reason.
   if (!['trial', 'active'].includes(tenant.status)) {
     return { error: `tenant_${tenant.status}`, status: 403 };
+  }
+
+  // Membership enforcement. A row in tenant_users is the authoritative proof that
+  // this user belongs to this tenant. Removal (organizationMembership.deleted) hard-deletes
+  // the row, so "row exists" == "active membership".
+  const member = await env.DB.prepare(
+    'SELECT 1 AS ok FROM tenant_users WHERE tenant_id = ? AND clerk_user_id = ?'
+  ).bind(tenant.id, payload.sub).first();
+
+  if (!member) {
+    return { error: 'tenant_membership_required', status: 403 };
   }
 
   return { tenant, userId: payload.sub, orgRole: payload.org_role };

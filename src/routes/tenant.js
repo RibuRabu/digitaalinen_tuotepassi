@@ -13,10 +13,11 @@ async function requireTenant(request, env) {
   const payload = await verifyClerkJWT(token, env);
   if (!payload) return { error: 'unauthorized', status: 401 };
 
-  // org_id may be absent from the JWT when the Clerk session template does not
-  // include org claims, or the user has not set an active org in their session.
-  // Accept X-Organization-Id header as a verified fallback (the user is still
-  // authenticated via the JWT — we just need the org they're operating under).
+  // Resolve the org the request operates under. Prefer the Clerk-signed org_id
+  // claim; fall back to the X-Organization-Id header only as a SELECTION HINT
+  // when the JWT carries no org claim. The hint is not trusted for authorization:
+  // getTenantContext enforces that payload.sub is an actual member of the resolved
+  // tenant, so a forged header for a tenant the user does not belong to yields 403.
   const orgId = payload.org_id || request.headers.get('X-Organization-Id') || null;
   const headerOrgId = request.headers.get('X-Organization-Id') ?? null;
   const jwtOrgId = payload.org_id ?? null;
