@@ -27,6 +27,8 @@ const APPLY = process.argv.includes('--apply');
 const CLERK = 'https://api.clerk.com/v1';
 const KEY = process.env.CLERK_SECRET_KEY;
 const DB = 'digitaalinen_tuotepassi';
+// Windows: spawnSync can't resolve `npx` without the .cmd extension → ENOENT.
+const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 if (!KEY) { console.error('FATAL: CLERK_SECRET_KEY is not set.'); process.exit(1); }
 
@@ -37,7 +39,7 @@ async function clerk(path) {
 }
 
 function d1(sql) {
-  const out = execFileSync('npx', ['wrangler', 'd1', 'execute', DB, '--remote', '--json', '--command', sql],
+  const out = execFileSync(npxCommand, ['wrangler', 'd1', 'execute', DB, '--remote', '--json', '--command', sql],
     { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   return JSON.parse(out)[0].results;
 }
