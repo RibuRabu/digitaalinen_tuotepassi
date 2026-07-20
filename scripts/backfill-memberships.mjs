@@ -106,9 +106,9 @@ if (!APPLY) {
 console.log('\n── APPLYING ───────────────────────────────────');
 let applied = 0;
 for (const r of toUpsert) {
-  const sql = `INSERT INTO tenant_users (id, tenant_id, clerk_user_id, role)
-    VALUES ('${newId()}', '${esc(r.tenantId)}', '${esc(r.userId)}', '${esc(r.role)}')
-    ON CONFLICT(tenant_id, clerk_user_id) DO UPDATE SET role = excluded.role;`;
+  // Single line: newlines in a --command value are truncated by Windows cmd.exe,
+  // which yielded SQLITE_ERROR 7500 "incomplete input". Keep the whole statement on one line.
+  const sql = `INSERT INTO tenant_users (id, tenant_id, clerk_user_id, role) VALUES ('${newId()}', '${esc(r.tenantId)}', '${esc(r.userId)}', '${esc(r.role)}') ON CONFLICT(tenant_id, clerk_user_id) DO UPDATE SET role = excluded.role;`;
   d1(sql);
   applied++;
 }
