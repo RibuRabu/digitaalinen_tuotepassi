@@ -27,7 +27,7 @@ import { wranglerInvocation } from './wrangler-invocation.mjs';
 const APPLY = process.argv.includes('--apply');
 const CLERK = 'https://api.clerk.com/v1';
 const KEY = process.env.CLERK_SECRET_KEY;
-const DB = 'digitaalinen_tuotepassi';
+const DB = 'dpp'; // actual D1 database name (the Worker binding is 'DB'; the config's name field is cosmetic)
 
 if (!KEY) { console.error('FATAL: CLERK_SECRET_KEY is not set.'); process.exit(1); }
 
