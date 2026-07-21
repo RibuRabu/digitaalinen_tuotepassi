@@ -102,7 +102,7 @@ async function loadQR() {
   if (window.QRCode) { _qr = window.QRCode; return _qr; }
   return new Promise(resolve => {
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+    s.src = '/qrcode.min.js';
     s.onload = () => { _qr = window.QRCode; resolve(_qr); };
     s.onerror = () => resolve(null);
     document.head.appendChild(s);
