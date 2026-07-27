@@ -28,18 +28,32 @@
   font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: .06em;
   text-transform: uppercase; color: var(--c-text-3); margin-bottom: var(--sp-2);
 }
+.pp-lang {
+  display: flex; align-items: center; gap: var(--sp-2);
+  margin-bottom: var(--sp-4); flex-wrap: wrap;
+}
+.pp-lang label { font-size: var(--text-xs); color: var(--c-text-3); }
+.pp-lang select {
+  font-family: var(--font-sans); font-size: var(--text-sm);
+  padding: .35rem 1.8rem .35rem .6rem; border: 1px solid var(--c-border);
+  border-radius: var(--r); background: var(--c-surface-1); color: var(--c-text-1);
+  cursor: pointer; max-width: 100%;
+}
 </style>
 </head>
 <body>
 <div class="page" id="app">
   <p class="msg msg--mute">Ladataan...</p>
 </div>
+<script src="/passport-i18n.js"></script>
 <script>
 function setMeta(property, content) {
   const el = document.querySelector(`meta[property="${property}"]`) ||
              document.querySelector(`meta[name="${property}"]`);
   if (el) el.setAttribute('content', content);
 }
+
+let CURRENT_PRODUCT = null;
 
 async function main() {
   const match = location.pathname.match(/^\/p\/([^/]+)\/?$/);
@@ -54,6 +68,7 @@ async function main() {
   catch { app.innerHTML = '<p class="msg msg--err">Virhe yhteydessä.</p>'; return; }
   if (!res.ok) { app.innerHTML = '<p class="msg msg--err">Tuotetta ei löytynyt.</p>'; return; }
   const p = await res.json();
+  CURRENT_PRODUCT = p;
   const pageTitle = (p.product_name || 'Tuotepassi') + ' – Digitaalinen tuotepassi';
   const pageDesc = [
     p.brand_name, p.product_name,
@@ -65,7 +80,24 @@ async function main() {
   setMeta('twitter:title', pageTitle);
   setMeta('twitter:description', pageDesc);
   setMeta('og:url', location.href);
-  render(app, p);
+  renderPassport(app, p, pickLang(p));
+}
+
+// Resolve the active language: ?lang= (if it has a translation) else original (fi).
+function pickLang(p) {
+  const translations = PassportI18n.parseTranslations(p.translations_json);
+  const requested = new URLSearchParams(location.search).get('lang');
+  return PassportI18n.resolveLang(requested, translations);
+}
+
+// Called by the language selector. Keeps the URL shareable (?lang=xx) without
+// changing product identity, and re-renders in place.
+function changeLang(code) {
+  const url = new URL(location.href);
+  if (code && code !== PassportI18n.ORIGINAL_LANG) url.searchParams.set('lang', code);
+  else url.searchParams.delete('lang');
+  history.replaceState(null, '', url);
+  renderPassport(document.getElementById('app'), CURRENT_PRODUCT, pickLang(CURRENT_PRODUCT));
 }
 
 function esc(str) {
@@ -78,28 +110,11 @@ function parseList(json) {
   catch { return []; }
 }
 
-function getTranslation(p) {
-  let trans = {};
-  try { trans = JSON.parse(p.translations_json || '{}'); } catch {}
-  const lang = (navigator.language || '').split('-')[0].toLowerCase();
-  return trans[lang] || {};
-}
-
-function tv(p, trans, key) {
-  const v = trans[key];
-  return (v !== undefined && v !== '') ? v : (p[key] ?? '');
-}
-
-function tlist(p, trans, jsonKey, transKey) {
-  if (Array.isArray(trans[transKey]) && trans[transKey].length > 0) return trans[transKey];
-  return parseList(p[jsonKey]);
-}
-
-function formatDate(str) {
+function formatDate(str, locale) {
   if (!str) return '';
   try {
     const d = new Date(str.includes('T') ? str : str.replace(' ', 'T') + 'Z');
-    return d.toLocaleDateString('fi-FI', { year: 'numeric', month: 'long', day: 'numeric' });
+    return d.toLocaleDateString(locale || 'fi-FI', { year: 'numeric', month: 'long', day: 'numeric' });
   } catch { return str; }
 }
 
@@ -122,45 +137,61 @@ function listSection(title, items) {
     `<ul class="data-list">${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`);
 }
 
-function render(app, p) {
-  const tr = getTranslation(p);
-  const name    = tv(p, tr, 'product_name');
-  const brand   = tv(p, tr, 'brand_name');
-  const mfrName  = tv(p, tr, 'manufacturer_name') || p.manufacturer_name || '';
+function renderPassport(app, p, lang) {
+  document.documentElement.lang = lang;
+  const translations = PassportI18n.parseTranslations(p.translations_json);
+  const tr = translations[lang] || {};
+  const T = (k) => PassportI18n.ui(lang, k);
+
+  const name     = PassportI18n.tval(p, tr, 'product_name');
+  const brand    = PassportI18n.tval(p, tr, 'brand_name');
+  const mfrName  = PassportI18n.tval(p, tr, 'manufacturer_name') || p.manufacturer_name || '';
   const mfrMail  = p.manufacturer_email || '';
   const mfrAddr  = p.manufacturer_address || '';
-  const opName   = tv(p, tr, 'responsible_operator_name') || p.responsible_operator_name || '';
+  const opName   = PassportI18n.tval(p, tr, 'responsible_operator_name') || p.responsible_operator_name || '';
   const opMail   = p.responsible_operator_email || '';
   const opAddr   = p.responsible_operator_address || '';
-  const prodType = tv(p, tr, 'product_type') || p.product_type || '';
+  const prodType = PassportI18n.tval(p, tr, 'product_type') || p.product_type || '';
 
-  const materials   = tlist(p, tr, 'materials_json',              'materials');
+  const materials   = PassportI18n.tlist(parseList(p.materials_json),              tr, 'materials');
   const substances  = parseList(p.substances_json);
-  const care        = tlist(p, tr, 'care_instructions_json',      'care_instructions');
-  const repair      = tlist(p, tr, 'repair_instructions_json',    'repair_instructions');
-  const recycling   = tlist(p, tr, 'recycling_instructions_json', 'recycling_instructions');
-  const safety      = tlist(p, tr, 'safety_notes_json',           'safety_notes');
+  const care        = PassportI18n.tlist(parseList(p.care_instructions_json),      tr, 'care_instructions');
+  const repair      = PassportI18n.tlist(parseList(p.repair_instructions_json),    tr, 'repair_instructions');
+  const recycling   = PassportI18n.tlist(parseList(p.recycling_instructions_json), tr, 'recycling_instructions');
+  const safety      = PassportI18n.tlist(parseList(p.safety_notes_json),           tr, 'safety_notes');
 
   const mfrSection = (mfrName || mfrMail || mfrAddr)
-    ? section('Valmistaja',
-        (mfrName ? dataRow('Nimi', mfrName) : '') +
-        (mfrMail ? dataRow('Sähköposti', mfrMail) : '') +
-        (mfrAddr ? dataRow('Osoite', mfrAddr) : ''))
+    ? section(T('manufacturer'),
+        (mfrName ? dataRow(T('name'), mfrName) : '') +
+        (mfrMail ? dataRow(T('email'), mfrMail) : '') +
+        (mfrAddr ? dataRow(T('address'), mfrAddr) : ''))
     : '';
 
   const opSection = (opName || opMail || opAddr)
-    ? section('Vastuullinen operaattori (EU)',
-        (opName ? dataRow('Nimi', opName) : '') +
-        (opMail ? dataRow('Sähköposti', opMail) : '') +
-        (opAddr ? dataRow('Osoite', opAddr) : ''))
+    ? section(T('operator'),
+        (opName ? dataRow(T('name'), opName) : '') +
+        (opMail ? dataRow(T('email'), opMail) : '') +
+        (opAddr ? dataRow(T('address'), opAddr) : ''))
     : '';
 
   const euBadge = (p.compliance_status === 'complete' || p.compliance_status === 'verified')
-    ? '<span class="eu-badge">✓ EU-vaatimusten mukainen</span>'
+    ? `<span class="eu-badge">${esc(T('euOk'))}</span>`
+    : '';
+
+  // Language selector: original + languages that actually have a translation record.
+  const langs = PassportI18n.availableLanguages(translations);
+  const langSelector = langs.length > 1
+    ? `<div class="pp-lang">
+        <label for="pp-lang-select">${esc(T('language'))}</label>
+        <select id="pp-lang-select" aria-label="${esc(T('language'))}">
+          ${langs.map(l => `<option value="${esc(l.code)}"${l.code === lang ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}
+        </select>
+      </div>`
     : '';
 
   app.innerHTML = `
-    <div class="system-badge">EU · Digitaalinen tuotepassi</div>
+    <div class="system-badge">${esc(T('badge'))}</div>
+    ${langSelector}
 
     <div class="pp-header">
       ${euBadge}
@@ -171,24 +202,23 @@ function render(app, p) {
     ${prodType ? `<p class="pp-type">${esc(prodType)}</p>` : ''}
     ${mfrSection}
     ${opSection}
-    ${listSection('Materiaalit', materials)}
-    ${listSection('Kemialliset aineet', substances)}
-    ${listSection('Hoito-ohjeet', care)}
-    ${listSection('Korjausohjeet', repair)}
-    ${listSection('Kierrätysohjeet', recycling)}
-    ${listSection('Turvallisuustiedot', safety)}
+    ${listSection(T('materials'), materials)}
+    ${listSection(T('substances'), substances)}
+    ${listSection(T('care'), care)}
+    ${listSection(T('repair'), repair)}
+    ${listSection(T('recycling'), recycling)}
+    ${listSection(T('safety'), safety)}
 
     <div class="pp-footer">
       <div class="pp-footer-item">
-        <span class="f-lbl">Julkaistu</span>
-        <span class="f-val">${esc(formatDate(p.published_at || p.updated_at || p.created_at))}</span>
-      </div>
-      <div class="pp-footer-item">
-        <span class="f-lbl">Versio</span>
-        <span class="f-val">v${esc(String(p.version || 1))}</span>
+        <span class="f-lbl">${esc(T('published'))}</span>
+        <span class="f-val">${esc(formatDate(p.published_at || p.updated_at || p.created_at, lang))}</span>
       </div>
     </div>
   `;
+
+  const sel = document.getElementById('pp-lang-select');
+  if (sel) sel.addEventListener('change', (e) => changeLang(e.target.value));
 }
 
 main();
