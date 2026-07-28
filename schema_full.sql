@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS nfc_orders (
   product_id               TEXT NOT NULL REFERENCES products(id),
   public_slug_snapshot     TEXT NOT NULL,
   programming_url_snapshot TEXT NOT NULL,
-  tag_type                 TEXT NOT NULL DEFAULT 'standard',
+  tag_type                 TEXT NOT NULL DEFAULT 'standard', -- 'mini' | 'standard' | 'on_metal' (validated in src/routes/nfc.js)
   quantity                 INTEGER NOT NULL DEFAULT 1,
   status                   TEXT NOT NULL DEFAULT 'new',
   recipient_name           TEXT NOT NULL,

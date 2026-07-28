@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  validateNfcOrderInput, canTransition, NFC_STATUS_TRANSITIONS, NFC_STATUSES,
+  validateNfcOrderInput, canTransition, NFC_STATUS_TRANSITIONS, NFC_STATUSES, NFC_TAG_TYPES,
   programmingUrlFor, customerOrderView,
   createNfcOrderForTenant, listNfcOrdersForTenant,
 } from '../src/routes/nfc.js';
@@ -109,8 +109,14 @@ test('rejects unknown tag_type', () => {
   assert.equal(validateNfcOrderInput({ ...validBody, tag_type: 'giant' }).error, 'invalid_tag_type');
 });
 
-test('accepts on_metal tag_type', () => {
+test('accepts the three real product types: mini, standard, on_metal', () => {
+  assert.equal(validateNfcOrderInput({ ...validBody, tag_type: 'mini' }).value.tag_type, 'mini');
+  assert.equal(validateNfcOrderInput({ ...validBody, tag_type: 'standard' }).value.tag_type, 'standard');
   assert.equal(validateNfcOrderInput({ ...validBody, tag_type: 'on_metal' }).value.tag_type, 'on_metal');
+});
+
+test('NFC_TAG_TYPES is exactly mini/standard/on_metal', () => {
+  assert.deepEqual([...NFC_TAG_TYPES].sort(), ['mini', 'on_metal', 'standard']);
 });
 
 test('rejects quantity below 1, above max, and non-integer', () => {

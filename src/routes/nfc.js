@@ -22,7 +22,11 @@ import { verifyClerkJWT, extractBearerToken, getTenantContext, getPlatformContex
 
 // ── Domain constants ──────────────────────────────────────────────────────────
 
-export const NFC_TAG_TYPES = ['standard', 'on_metal'];
+// Real, self-describing product types. 'mini' and 'standard' are the two SKUs a
+// customer can order today; 'on_metal' (Metallitunniste) is accepted for future
+// orders and historical rows. Unknown values are rejected. (Phase 7.5 replaced the
+// earlier fake mapping where 'on_metal' stood in for the Mini product.)
+export const NFC_TAG_TYPES = ['mini', 'standard', 'on_metal'];
 export const NFC_STATUSES = ['new', 'confirmed', 'processing', 'programmed', 'shipped', 'cancelled'];
 export const NFC_QUANTITY_MIN = 1;
 export const NFC_QUANTITY_MAX = 10000;
