@@ -255,6 +255,46 @@ CREATE TABLE IF NOT EXISTS tenant_billing (
   updated_at           TEXT
 );
 
+-- ── Programmed NFC tag orders (0010) ──────────────────────────────────────────
+-- A tenant orders physical NFC tags pre-programmed to open a product's public
+-- passport. Fulfilled by platform admins. tenant_id/product_id and the programming
+-- target are always server-derived (see src/routes/nfc.js). Child-first cleanup:
+-- delete nfc_orders before the referenced product/tenant.
+
+CREATE TABLE IF NOT EXISTS nfc_orders (
+  id                       TEXT PRIMARY KEY,
+  order_number             TEXT NOT NULL UNIQUE,
+  tenant_id                TEXT NOT NULL REFERENCES tenants(id),
+  product_id               TEXT NOT NULL REFERENCES products(id),
+  public_slug_snapshot     TEXT NOT NULL,
+  programming_url_snapshot TEXT NOT NULL,
+  tag_type                 TEXT NOT NULL DEFAULT 'standard',
+  quantity                 INTEGER NOT NULL DEFAULT 1,
+  status                   TEXT NOT NULL DEFAULT 'new',
+  recipient_name           TEXT NOT NULL,
+  company_name             TEXT,
+  address_line             TEXT NOT NULL,
+  postal_code              TEXT NOT NULL,
+  city                     TEXT NOT NULL,
+  country_code             TEXT NOT NULL,
+  customer_note            TEXT,
+  admin_note               TEXT,
+  tracking_code            TEXT,
+  tracking_url             TEXT,
+  created_at               TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at               TEXT NOT NULL DEFAULT (datetime('now')),
+  confirmed_at             TEXT,
+  programmed_at            TEXT,
+  shipped_at               TEXT,
+  cancelled_at             TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_nfc_orders_tenant_id    ON nfc_orders(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_nfc_orders_product_id   ON nfc_orders(product_id);
+CREATE INDEX IF NOT EXISTS idx_nfc_orders_status       ON nfc_orders(status);
+CREATE INDEX IF NOT EXISTS idx_nfc_orders_created_at   ON nfc_orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_nfc_orders_order_number ON nfc_orders(order_number);
+
 -- ── Indexes ───────────────────────────────────────────────────────────────────
 
 CREATE INDEX IF NOT EXISTS idx_tenant_users_clerk_user_id ON tenant_users(clerk_user_id);

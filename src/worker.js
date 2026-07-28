@@ -16,6 +16,10 @@ import {
 } from './routes/tenant.js';
 import { handleClerkWebhook } from './routes/webhooks.js';
 import { handleCompliance } from './routes/compliance.js';
+import {
+  handleCreateNfcOrder, handleListNfcOrders,
+  handleAdminListNfcOrders, handleAdminGetNfcOrder, handleAdminUpdateNfcOrderStatus,
+} from './routes/nfc.js';
 
 async function serveAsset(request, env, pathname) {
   const target = new URL(request.url);
@@ -166,6 +170,11 @@ export default {
           const slug = decodeURIComponent(productRest.slice(0, -'/share-link'.length));
           response = await handleRegenerateShareLink(request, env, slug);
         }
+        else if (productRest.endsWith('/nfc-orders') && (method === 'POST' || method === 'GET')) {
+          const slug = decodeURIComponent(productRest.slice(0, -'/nfc-orders'.length));
+          if (method === 'POST') response = await handleCreateNfcOrder(request, env, slug);
+          else response = await handleListNfcOrders(request, env, slug);
+        }
         else {
           const slug = decodeURIComponent(productRest);
           if (method === 'GET')    response = await handleGetProduct(request, env, slug);
@@ -191,6 +200,18 @@ export default {
       }
       else if (rest === 'products/unclaimed' && method === 'GET') {
         response = await handleListUnclaimedProducts(request, env);
+      }
+      else if (rest === 'nfc-orders' && method === 'GET') {
+        response = await handleAdminListNfcOrders(request, env);
+      }
+      else if (rest.startsWith('nfc-orders/')) {
+        const nfcRest = rest.slice('nfc-orders/'.length);
+        if (nfcRest.endsWith('/status') && method === 'POST') {
+          const orderId = decodeURIComponent(nfcRest.slice(0, -'/status'.length));
+          response = await handleAdminUpdateNfcOrderStatus(request, env, orderId);
+        } else if (method === 'GET') {
+          response = await handleAdminGetNfcOrder(request, env, decodeURIComponent(nfcRest));
+        }
       }
       else if (rest.startsWith('tenant/')) {
         const tenantRest = rest.slice('tenant/'.length);
