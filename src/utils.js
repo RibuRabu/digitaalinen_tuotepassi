@@ -38,6 +38,12 @@ export const DEFAULT_CONSUMER_VISIBILITY = [
 ];
 
 export const STATUSES = ['draft', 'active', 'archived'];
+
+// Free-trial entitlement. A tenant on the 'free' plan (the authoritative trial
+// signal — see webhooks.js: new orgs are created plan='free') may own ONE product
+// passport counted toward the limit. Enforced server-side in tenant.js.
+export const TRIAL_PLAN = 'free';
+export const TRIAL_PRODUCT_LIMIT = 1;
 export const COMPLIANCE_STATUSES = ['not_started', 'in_progress', 'complete', 'verified'];
 export const DATA_CARRIER_TYPES = ['qr', 'nfc', 'rfid', 'barcode'];
 export const IDENTIFIER_LEVELS = ['model', 'batch', 'item'];

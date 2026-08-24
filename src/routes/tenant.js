@@ -4,6 +4,7 @@ import {
   STATUSES, COMPLIANCE_STATUSES, DATA_CARRIER_TYPES, IDENTIFIER_LEVELS,
   SUPPORTED_LANGS, TRANS_TEXT_FIELDS, TRANS_LIST_FIELDS,
   ALLOWED_FILE_TYPES, MAX_FILE_SIZE,
+  TRIAL_PLAN, TRIAL_PRODUCT_LIMIT,
 } from '../utils.js';
 import { verifyClerkJWT, extractBearerToken, getTenantContext } from '../auth/clerk.js';
 import { buildCreateProductColumns, buildCreateProductValues } from './admin.js';
@@ -74,16 +75,38 @@ export async function handleListProducts(request, env) {
   return json({ products: results, limit, offset });
 }
 
+// True when a tenant on the free-trial plan already owns its one allowed product.
+// Pure so it is unit-testable. tenant.plan is the authoritative trial signal.
+export function trialProductLimitExceeded(tenant, currentCount) {
+  return tenant.plan === TRIAL_PLAN && currentCount >= TRIAL_PRODUCT_LIMIT;
+}
+
 // POST /api/tenant/product
 export async function handleCreateProduct(request, env) {
   const ctx = await requireTenant(request, env);
   if (ctx.error) return json({ error: ctx.error }, ctx.status);
+  return createProductForTenant(request, env, ctx);
+}
 
-  // Enforce product limit
+// Post-auth create logic (exported for unit testing). ctx is a verified tenant
+// context { tenant, userId }. tenant_id and the plan are taken from ctx (the
+// DB-resolved tenant), never from the request body, so a spoofed plan/tenant_id
+// in the body cannot bypass the limit.
+export async function createProductForTenant(request, env, ctx) {
+  // Products counted toward a limit are the non-archived ones (archived = soft
+  // removed from active ownership; excluded, matching the existing lifecycle).
   const countRow = await env.DB.prepare(
     "SELECT COUNT(*) as n FROM products WHERE tenant_id = ? AND status != 'archived'"
   ).bind(ctx.tenant.id).first();
-  if ((countRow?.n || 0) >= ctx.tenant.product_limit) {
+  const count = countRow?.n || 0;
+
+  // Free-trial tenants may create ONE product passport. Checked before the generic
+  // per-tenant limit so trial users get the specific, translatable reason.
+  if (trialProductLimitExceeded(ctx.tenant, count)) {
+    return json({ error: 'trial_product_limit_reached', limit: TRIAL_PRODUCT_LIMIT }, 403);
+  }
+  // Generic per-tenant product limit (paid plans).
+  if (count >= ctx.tenant.product_limit) {
     return json({ error: 'product_limit_reached', limit: ctx.tenant.product_limit }, 403);
   }
 
@@ -160,7 +183,13 @@ export async function handleGetProduct(request, env, slug) {
 export async function handleUpdateProduct(request, env, slug) {
   const ctx = await requireTenant(request, env);
   if (ctx.error) return json({ error: ctx.error }, ctx.status);
+  return updateProductForTenant(request, env, slug, ctx);
+}
 
+// Post-auth update logic (exported for unit testing). Deliberately has NO
+// product-count gate: editing and publishing an EXISTING product must remain
+// allowed even after a trial tenant has used its one-product creation slot.
+export async function updateProductForTenant(request, env, slug, ctx) {
   const existing = await env.DB.prepare(
     'SELECT * FROM products WHERE public_slug = ? AND tenant_id = ?'
   ).bind(slug, ctx.tenant.id).first();
